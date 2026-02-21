@@ -1,0 +1,172 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+command_timeout = 1000
+add_newline = true
+
+# ── Format ────────────────────────────────────────────────────────────────────
+# Ligne 1 : infos  →  durée | mémoire | heure
+# Ligne 2 : ❯
+format = """
+$os $username$hostname$directory$git_branch$git_status$git_state$git_commit\
+$python$nodejs$rust$golang$java$docker_context$package\
+$fill\
+$cmd_duration$memory_usage$time
+$status$character"""
+
+# ── Système ───────────────────────────────────────────────────────────────────
+
+[os]
+disabled = false
+style = "bold #ff79c6"
+format = "[$symbol]($style)"
+
+[os.symbols]
+Pop        = " "
+Ubuntu     = " "
+Debian     = " "
+Arch       = " "
+Fedora     = " "
+Kali       = " "
+Manjaro    = " "
+Mint       = " "
+NixOS      = " "
+openSUSE   = " "
+Raspbian   = " "
+Redhat     = " "
+RedHatEnterprise = " "
+RockyLinux = " "
+AlmaLinux  = " "
+CentOS     = " "
+Alpine     = " "
+Android    = " "
+FreeBSD    = " "
+Macos      = " "
+Windows    = "󰍲 "
+Unknown    = " "
+
+[username]
+style_user = "#9399b2"
+style_root = "bold #f38ba8"
+format     = "[$user]($style)"
+show_always = true
+
+[hostname]
+style      = "#7f849c"
+format     = "[@$hostname]($style) "
+ssh_only   = false
+ssh_symbol = "󰣀 "
+
+# ── Navigation ────────────────────────────────────────────────────────────────
+
+[directory]
+style              = "bold #e79cfe"
+read_only          = " 󰌾"
+read_only_style    = "#f38ba8"
+truncate_to_repo   = false
+truncation_length  = 4
+truncation_symbol  = "…/"
+format             = "[ $path]($style)[$read_only]($read_only_style) "
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+
+[git_branch]
+symbol = " "
+style  = "bold #ff79c6"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style    = "#8be9fd"
+format   = "([$all_status$ahead_behind]($style) )"
+ahead    = "⇡$count"
+behind   = "⇣$count"
+diverged = "⇕⇡$ahead_count⇣$behind_count"
+untracked = "?$count"
+stashed  = "󰏗 $count"
+modified = "!$count"
+staged   = "+$count"
+renamed  = "»$count"
+deleted  = "✘$count"
+conflicted = "=$count"
+
+[git_state]
+style  = "#f9e2af"
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+
+[git_commit]
+style      = "#6c7086"
+format     = '[\($hash$tag\)]($style) '
+tag_symbol = " 󰓼 "
+only_detached = true
+
+# ── Langages ──────────────────────────────────────────────────────────────────
+
+[python]
+symbol = " "
+style  = "#f9e2af"
+format = "[$symbol$version]($style) "
+
+[nodejs]
+symbol = " "
+style  = "#a6e3a1"
+format = "[$symbol$version]($style) "
+
+[rust]
+symbol = " "
+style  = "#ff79c6"
+format = "[$symbol$version]($style) "
+
+[golang]
+symbol = " "
+style  = "#8be9fd"
+format = "[$symbol$version]($style) "
+
+[java]
+symbol = " "
+style  = "#f38ba8"
+format = "[$symbol$version]($style) "
+
+[docker_context]
+symbol        = " "
+style         = "#8be9fd"
+format        = "[$symbol$context]($style) "
+only_with_files = true
+
+[package]
+symbol = "󰏗 "
+style  = "#e79cfe"
+format = "[$symbol$version]($style) "
+display_private = false
+
+# ── Droite (après $fill) ─────────────────────────────────────────────────────
+
+[fill]
+symbol = " "
+
+[cmd_duration]
+format   = "[󱎫 $duration]($style) "
+style    = "#7f849c"
+min_time = 2000
+
+[memory_usage]
+disabled  = false
+threshold = 0
+symbol    = "󰑭 "
+style     = "#9399b2"
+format    = "[$symbol$ram]($style) "
+
+[time]
+disabled     = false
+style        = "bold #6c7086"
+format       = "[ $time]($style)"
+time_format  = "%H:%M"
+
+# ── Ligne 2 ───────────────────────────────────────────────────────────────────
+
+[status]
+disabled = false
+style    = "#ff79c6"
+format   = "[$symbol$status ]($style)"
+symbol   = "✘ "
+
+[character]
+success_symbol = "[❯](bold #8be9fd)"
+error_symbol   = "[❯](bold #ff79c6)"

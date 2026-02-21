@@ -1,0 +1,18 @@
+gui:
+  theme:
+    activeBorderColor: ['#ff79c6', 'bold'] # pink  — fenêtre active
+    inactiveBorderColor: ['#6c7086'] # muted — fenêtre inactive
+    optionsTextColor: ['#e79cfe'] # purple
+    selectedLineBgColor: ['#3d2454'] # bg-high
+    selectedRangeBgColor: ['#3d2454']
+    cherryPickedCommitBgColor: ['#3d2454']
+    cherryPickedCommitFgColor: ['#8be9fd'] # cyan
+    unstagedChangesColor: ['#f38ba8'] # danger
+    defaultFgColor: ['#f8f8f2'] # text
+    searchingActiveBorderColor: ['#8be9fd', 'bold'] # cyan
+  nerdFontsVersion: '3'
+  border: rounded
+git:
+  pagers:
+    - colorArg: always
+      pager: delta

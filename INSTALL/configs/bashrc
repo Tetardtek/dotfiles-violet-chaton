@@ -1,0 +1,13 @@
+# --- ensure VS Code flatpak / COSMIC Terminal sees host binaries ---------------
+# Some tools live in /usr/local/bin on the host; prepend real locations before
+# any commands that rely on them (starship, fastfetch, chafa, eza, ...).
+export PATH="/usr/local/bin:/usr/bin:$PATH"
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# Lance zsh automatiquement (COSMIC Terminal ignore /etc/passwd)
+exec zsh

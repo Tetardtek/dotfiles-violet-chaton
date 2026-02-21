@@ -1,0 +1,29 @@
+[
+  {
+    "accentFromPage": false,
+    "accentOnWindow": true,
+    "accentSaturationLimit": 1,
+    "alpha": 1,
+    "backgroundImage": "/resources/bg_pawel-czerwinski-Xk7ktUfyaNI-unsplash.webp",
+    "backgroundPosition": "stretch",
+    "backgroundSource": "",
+    "blur": 0,
+    "colorAccentBg": "#2c183e",
+    "colorBg": "#341c4a",
+    "colorFg": "#d3d9e3",
+    "colorHighlightBg": "#b68fdc",
+    "colorWindowBg": "#1D1E21",
+    "contrast": 0,
+    "dimBlurred": false,
+    "engineVersion": 1,
+    "id": "11455bed-3b48-4de5-9a03-a83a1b4be775",
+    "name": "Rice Violet-Chaton",
+    "preferSystemAccent": false,
+    "radius": 14,
+    "simpleScrollbar": true,
+    "transparencyTabBar": false,
+    "transparencyTabs": false,
+    "url": "",
+    "version": 1
+  }
+]

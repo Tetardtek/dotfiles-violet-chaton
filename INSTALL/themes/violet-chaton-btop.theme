@@ -1,0 +1,75 @@
+# violet-chaton btop theme
+# Palette : ~/Documents/config/violet-chaton-discord-theme/src/modules/_variables.scss
+
+# Main background
+theme[main_bg]="#261537"
+
+# Main text color
+theme[main_fg]="#f8f8f2"
+
+# Title color for boxes
+theme[title]="#e79cfe"
+
+# Highlight color for keyboard shortcuts
+theme[hi_fg]="#ff79c6"
+
+# Background color of selected item in processes box
+theme[selected_bg]="#3d2454"
+
+# Foreground color of selected item in processes box
+theme[selected_fg]="#f8f8f2"
+
+# Color of inactive/disabled text
+theme[inactive_fg]="#6c7086"
+
+# Misc colors for processes box (mini cpu graphs, details, status)
+theme[proc_misc]="#8be9fd"
+
+# Box outline colors
+theme[cpu_box]="#38234b"
+theme[mem_box]="#38234b"
+theme[net_box]="#38234b"
+theme[proc_box]="#38234b"
+
+# Box divider line
+theme[div_line]="#341c4a"
+
+# Temperature graph : cyan (froid) → warning (chaud) → danger (critique)
+theme[temp_start]="#8be9fd"
+theme[temp_mid]="#f9e2af"
+theme[temp_end]="#f38ba8"
+
+# CPU graph : purple → pink → danger
+theme[cpu_start]="#e79cfe"
+theme[cpu_mid]="#ff79c6"
+theme[cpu_end]="#f38ba8"
+
+# Mem/Disk free meter : green → cyan → purple
+theme[free_start]="#a6e3a1"
+theme[free_mid]="#8be9fd"
+theme[free_end]="#e79cfe"
+
+# Mem/Disk cached meter : purple subtil
+theme[cached_start]="#3d2454"
+theme[cached_mid]="#e79cfe"
+theme[cached_end]="#e79cfe"
+
+# Mem/Disk available meter : cyan → purple
+theme[available_start]="#8be9fd"
+theme[available_mid]="#e79cfe"
+theme[available_end]="#ff79c6"
+
+# Mem/Disk used meter : purple → pink → danger
+theme[used_start]="#e79cfe"
+theme[used_mid]="#ff79c6"
+theme[used_end]="#f38ba8"
+
+# Download graph : cyan → purple
+theme[download_start]="#8be9fd"
+theme[download_mid]="#e79cfe"
+theme[download_end]="#ff79c6"
+
+# Upload graph : pink → danger
+theme[upload_start]="#ff79c6"
+theme[upload_mid]="#f38ba8"
+theme[upload_end]="#f9e2af"

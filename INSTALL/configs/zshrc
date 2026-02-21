@@ -1,0 +1,120 @@
+# ── zinit ─────────────────────────────────────────────────────────────────────
+if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
+    print -P "%F{33} %F{220}Installing zinit…%f"
+    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
+    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git"
+fi
+source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+
+# ── Plugins ───────────────────────────────────────────────────────────────────
+zinit light zsh-users/zsh-autosuggestions
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-completions
+
+# ── PATH ──────────────────────────────────────────────────────────────────────
+export PATH="/usr/local/bin:$HOME/.local/bin:/usr/bin:$HOME/.atuin/bin:$PATH"
+
+# ── Historique ────────────────────────────────────────────────────────────────
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTFILE=~/.zsh_history
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt SHARE_HISTORY
+setopt APPEND_HISTORY
+
+# ── Options zsh ───────────────────────────────────────────────────────────────
+setopt AUTO_CD            # cd en tapant juste le nom du dossier
+setopt CORRECT            # correction de typos
+setopt GLOB_DOTS          # inclure fichiers cachés dans les globs
+setopt NO_BEEP            # silence
+
+# ── Completion ────────────────────────────────────────────────────────────────
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:descriptions' format '%F{#e79cfe}── %d ──%f'
+
+# ── Couleurs grep ─────────────────────────────────────────────────────────────
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+
+# ── eza (remplace ls) ─────────────────────────────────────────────────────────
+alias ls='eza --icons --color=always --group-directories-first'
+alias ll='eza -l --icons --git --group-directories-first'
+alias lt='eza --tree --icons'
+export LS_COLORS="$(bash ~/.local/share/violet-chaton/violet-chaton-ls-colors.sh)"
+
+# ── bat (remplace cat) ────────────────────────────────────────────────────────
+alias bat='batcat'
+alias cat='batcat --paging=never'
+export MANPAGER="sh -c 'col -bx | batcat -l man -p'"
+
+# ── fd (remplace find) ────────────────────────────────────────────────────────
+alias fd='fdfind'
+
+# ── Nouveaux outils ───────────────────────────────────────────────────────────
+alias lg='lazygit'                        # git TUI
+alias rg='rg --color=always'              # ripgrep avec couleurs
+alias disk='ncdu'                         # analyse disque
+alias man='tldr'                          # man pages simplifiées
+alias pipes='pipes.sh'                    # animation pipes
+fuck() { eval "$(thefuck --alias 2>/dev/null)"; fuck "$@"; }  # init paresseux
+
+# ── fzf ───────────────────────────────────────────────────────────────────────
+[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+[ -f /usr/share/doc/fzf/examples/completion.zsh ]   && source /usr/share/doc/fzf/examples/completion.zsh
+
+# Raccourcis fzf personnalisés
+bindkey -r '^T'         # libère Ctrl+T
+bindkey -r '\ec'        # libère Alt+C
+bindkey '^G' fzf-file-widget   # Ctrl+G → chercher un fichier
+bindkey '^F' fzf-cd-widget     # Ctrl+F → chercher un dossier
+export FZF_DEFAULT_COMMAND='fdfind --type f --hidden --follow --exclude .git --exclude .cache --search-path $HOME'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND='fdfind --type d --hidden --follow --exclude .git --exclude .cache --search-path $HOME'
+export FZF_DEFAULT_OPTS="
+  --height 40% --layout=reverse --border rounded --info=hidden
+  --preview 'batcat --color=always --style=plain --line-range=:80 {}'
+  --preview-window 'right:50%:wrap'
+  --color=bg+:#3d2454,bg:#341c4a,spinner:#ff79c6,hl:#8be9fd
+  --color=fg:#f8f8f2,header:#ff79c6,info:#e79cfe,pointer:#ff79c6
+  --color=marker:#a6e3a1,fg+:#f8f8f2,prompt:#e79cfe,hl+:#8be9fd"
+
+# ── zoxide (remplace cd) ──────────────────────────────────────────────────────
+eval "$(zoxide init zsh --cmd cd)"
+
+# ── Fastfetch ─────────────────────────────────────────────────────────────────
+alias fetch='fastfetch --config ~/.config/fastfetch/config.jsonc --raw <(chafa --size 44x22 --symbols vhalf --color-space rgb "$HOME/.config/fastfetch/violet-chaton-logo.png") --logo-width 52'
+fetch
+
+# ── zsh-autosuggestions ───────────────────────────────────────────────────────
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#6c7086"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+bindkey '^ ' autosuggest-accept     # Ctrl+Space pour accepter la suggestion
+
+# ── zsh-syntax-highlighting (couleurs violet-chaton) ─────────────────────────
+ZSH_HIGHLIGHT_STYLES[command]='fg=#8be9fd'
+ZSH_HIGHLIGHT_STYLES[builtin]='fg=#ff79c6'
+ZSH_HIGHLIGHT_STYLES[alias]='fg=#e79cfe'
+ZSH_HIGHLIGHT_STYLES[function]='fg=#8be9fd'
+ZSH_HIGHLIGHT_STYLES[string]='fg=#e79cfe'
+ZSH_HIGHLIGHT_STYLES[path]='fg=#f8f8f2,underline'
+ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#f38ba8,bold'
+ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#ff79c6'
+ZSH_HIGHLIGHT_STYLES[comment]='fg=#6c7086,italic'
+ZSH_HIGHLIGHT_STYLES[globbing]='fg=#f9e2af'
+ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=#f9e2af'
+
+# ── atuin (remplace Ctrl+R) ───────────────────────────────────────────────────
+[[ -f ~/.atuin/bin/env ]] && source ~/.atuin/bin/env
+command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
+
+# ── starship ──────────────────────────────────────────────────────────────────
+command -v starship &>/dev/null && eval "$(starship init zsh)"

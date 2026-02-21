@@ -1,0 +1,6 @@
+# Archive de test local
+config.tar.gz
+
+# Dépôt git du thème Discord (sources SCSS)
+# Le CSS compilé est dans INSTALL/themes/violet-chaton.theme.css
+INSTALL/themes/violet-chaton-discord-theme/

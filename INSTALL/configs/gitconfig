@@ -1,0 +1,58 @@
+[credential "https://github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential
+
+[core]
+	pager = delta
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	syntax-theme         = violet-chaton
+	side-by-side         = true
+	line-numbers         = true
+	navigate             = true
+	hyperlinks           = true
+
+	# Lignes supprimées : fond rose sombre
+	minus-style          = syntax "#3d1a2e"
+	minus-emph-style     = syntax "#5a1a38"
+
+	# Lignes ajoutées : fond cyan sombre
+	plus-style           = syntax "#0d2a35"
+	plus-emph-style      = syntax "#0d3a48"
+
+	# Numéros de ligne
+	line-numbers-minus-style     = "#ff79c6"
+	line-numbers-plus-style      = "#8be9fd"
+	line-numbers-zero-style      = "#6c7086"
+	line-numbers-left-format     = " {nm} │"
+	line-numbers-right-format    = " {np} │"
+
+	# En-tête de fichier
+	file-style                   = "bold #e79cfe"
+	file-decoration-style        = "#3d2454 box"
+	file-added-label             = "[+]"
+	file-removed-label           = "[-]"
+	file-modified-label          = "[~]"
+	file-renamed-label           = "[»]"
+
+	# En-tête de hunk
+	hunk-header-style            = "syntax #261537"
+	hunk-header-decoration-style = "#6c7086 box"
+	hunk-header-file-style       = "bold #e79cfe"
+	hunk-header-line-number-style = "#7f849c"
+
+	# Commit
+	commit-decoration-style      = "bold #ff79c6 box"
+	commit-style                 = "bold #f8f8f2"
+
+[merge]
+	conflictstyle = diff3
+
+[diff]
+	colorMoved = default

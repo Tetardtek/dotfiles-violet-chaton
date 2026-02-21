@@ -1,0 +1,10 @@
+# violet-chaton — thème atuin
+# Les valeurs sont des noms de couleurs CSS (palette crate)
+
+Base      = "white"           # texte principal       #f8f8f2
+Important = "hot_pink"        # éléments importants   #ff79c6
+Guidance  = "slate_gray"      # texte d'aide/muted    #7f849c
+Annotation = "orchid"         # labels/annotations    #e79cfe
+AlertInfo  = "light_cyan"     # info                  #8be9fd
+AlertWarn  = "pale_goldenrod" # avertissement         #f9e2af
+AlertError = "light_pink"     # erreur                #f38ba8

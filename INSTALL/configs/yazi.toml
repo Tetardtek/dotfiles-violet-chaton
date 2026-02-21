@@ -1,0 +1,21 @@
+[manager]
+ratio          = [1, 3, 4]   # proportions : parents | dossier | preview
+sort_by        = "natural"
+sort_sensitive = false
+sort_hidden    = false
+show_hidden    = false
+show_symlink   = true
+
+[preview]
+tab_size   = 2
+max_width  = 600
+max_height = 900
+
+[opener]
+edit = [{ run = 'nano "$@"', block = true }]
+
+[open]
+rules = [
+  { mime = "text/*",        use = "edit" },
+  { mime = "image/*",       use = "open" },
+]

@@ -1,0 +1,247 @@
+/* ── violet-chaton GTK3 theme — Nemo & GTK apps ───────────────────────────────
+ *
+ *  Couleurs extraites du thème COSMIC violet-chaton :
+ *  bg        #341C4A  background.base
+ *  surface   #493161  background.component.base
+ *  hover     #5B4671  background.component.hover
+ *  accent    #E79CFE  accent.base
+ *  text      #FCFCF6  background.on
+ *  muted     #7F849C  neutral_7
+ *  border    #5C496C  background.divider
+ *  sidebar   #2B1540  (bg légèrement plus sombre)
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+@define-color theme_bg_color          #341C4A;
+@define-color theme_fg_color          #FCFCF6;
+@define-color theme_base_color        #493161;
+@define-color theme_selected_bg_color #E79CFE;
+@define-color theme_selected_fg_color #341C4A;
+@define-color theme_text_color        #FCFCF6;
+@define-color borders                 #5C496C;
+
+/* ── Fenêtre principale ────────────────────────────────────────────────────── */
+window, .background {
+    background-color: #341C4A;
+    color: #FCFCF6;
+}
+
+/* ── Barre de titre / headerbar ───────────────────────────────────────────── */
+headerbar, .titlebar {
+    background-color: #493161;
+    color: #FCFCF6;
+    border-bottom: 1px solid #5C496C;
+}
+
+headerbar button, .titlebar button {
+    background-color: transparent;
+    color: #FCFCF6;
+    border: none;
+    border-radius: 6px;
+}
+
+headerbar button:hover, .titlebar button:hover {
+    background-color: #5B4671;
+}
+
+headerbar button:active, .titlebar button:active {
+    background-color: #E79CFE;
+    color: #341C4A;
+}
+
+/* ── Sidebar Nemo (paneau des emplacements) ───────────────────────────────── */
+.sidebar, placessidebar {
+    background-color: #2B1540;
+    color: #FCFCF6;
+    border-right: 1px solid #5C496C;
+}
+
+.sidebar row, placessidebar row {
+    border-radius: 6px;
+    padding: 2px 4px;
+}
+
+.sidebar row:hover, placessidebar row:hover {
+    background-color: #5B4671;
+}
+
+.sidebar row:selected, placessidebar row:selected {
+    background-color: #E79CFE;
+    color: #341C4A;
+}
+
+.sidebar .sidebar-section-header, placessidebar .sidebar-section-header {
+    color: #7F849C;
+    font-size: smaller;
+}
+
+/* ── Vue fichiers (icônes + liste) ───────────────────────────────────────── */
+.view, iconview, treeview {
+    background-color: #341C4A;
+    color: #FCFCF6;
+}
+
+.view:selected, iconview:selected,
+treeview:selected, .view:focus:selected {
+    background-color: #E79CFE;
+    color: #341C4A;
+}
+
+/* En-têtes de colonnes (vue liste) */
+treeview header button {
+    background-color: #493161;
+    color: #FCFCF6;
+    border: none;
+    border-right: 1px solid #5C496C;
+    border-bottom: 1px solid #5C496C;
+}
+
+treeview header button:hover {
+    background-color: #5B4671;
+}
+
+/* ── Barre d'outils / pathbar ─────────────────────────────────────────────── */
+toolbar, .path-bar {
+    background-color: #493161;
+    border-bottom: 1px solid #5C496C;
+}
+
+.path-bar button {
+    background-color: transparent;
+    color: #FCFCF6;
+    border: none;
+    border-radius: 6px;
+}
+
+.path-bar button:hover {
+    background-color: #5B4671;
+}
+
+.path-bar button:checked {
+    background-color: #5B4671;
+    color: #E79CFE;
+}
+
+/* ── Barre de recherche / entrée texte ────────────────────────────────────── */
+entry {
+    background-color: #5B4671;
+    color: #FCFCF6;
+    border: 1px solid #5C496C;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+entry:focus {
+    border-color: #E79CFE;
+    box-shadow: 0 0 0 2px alpha(#E79CFE, 0.3);
+}
+
+entry placeholder {
+    color: #7F849C;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+scrollbar {
+    background-color: transparent;
+}
+
+scrollbar slider {
+    background-color: #5C496C;
+    border-radius: 10px;
+    min-width: 6px;
+    min-height: 6px;
+}
+
+scrollbar slider:hover {
+    background-color: #E79CFE;
+}
+
+/* ── Menu contextuel ──────────────────────────────────────────────────────── */
+menu, .context-menu, .popup {
+    background-color: #493161;
+    color: #FCFCF6;
+    border: 1px solid #5C496C;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+menuitem {
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+menuitem:hover {
+    background-color: #E79CFE;
+    color: #341C4A;
+}
+
+menuitem accelerator {
+    color: #7F849C;
+}
+
+separator, menuitem separator {
+    background-color: #5C496C;
+    min-height: 1px;
+}
+
+/* ── Barre de statut ──────────────────────────────────────────────────────── */
+.statusbar, statusbar {
+    background-color: #493161;
+    color: #7F849C;
+    border-top: 1px solid #5C496C;
+    font-size: smaller;
+}
+
+/* ── Boutons génériques ───────────────────────────────────────────────────── */
+button {
+    background-color: #5B4671;
+    color: #FCFCF6;
+    border: 1px solid #5C496C;
+    border-radius: 6px;
+    padding: 4px 12px;
+}
+
+button:hover {
+    background-color: #E79CFE;
+    color: #341C4A;
+    border-color: #E79CFE;
+}
+
+button.suggested-action {
+    background-color: #E79CFE;
+    color: #341C4A;
+    border-color: #E79CFE;
+}
+
+button.destructive-action {
+    background-color: #F38BA8;
+    color: #341C4A;
+}
+
+/* ── Notebooks / onglets ─────────────────────────────────────────────────── */
+notebook tab {
+    background-color: #493161;
+    color: #7F849C;
+    border-radius: 6px 6px 0 0;
+    padding: 4px 12px;
+}
+
+notebook tab:checked {
+    background-color: #5B4671;
+    color: #FCFCF6;
+}
+
+/* ── Popover ─────────────────────────────────────────────────────────────── */
+popover {
+    background-color: #493161;
+    color: #FCFCF6;
+    border: 1px solid #5C496C;
+    border-radius: 8px;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+tooltip {
+    background-color: #5B4671;
+    color: #FCFCF6;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
