@@ -3,9 +3,16 @@
 # Lancé depuis le clic sur wireplumber OU backlight
 
 import gi
+import math
+import threading
+import urllib.request
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
-from gi.repository import Gtk, Gdk, GtkLayerShell, GLib
+gi.require_version('GdkPixbuf', '2.0')
+gi.require_version('Pango', '1.0')
+gi.require_version('PangoCairo', '1.0')
+from gi.repository import Gtk, Gdk, GtkLayerShell, GLib, GdkPixbuf, Pango, PangoCairo
 import subprocess
 import os
 import re
@@ -135,6 +142,31 @@ scale.audio.muted slider {
     border-color: rgba(108, 112, 134, 0.60);
 }
 
+/* ── Sélecteur de périphérique de sortie ────────────────────────────────────── */
+
+#device-btn {
+    background-color: transparent;
+    color: rgba(248, 248, 242, 0.65);
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 11px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 5px 10px;
+    min-width: 0;
+}
+
+#device-btn:hover {
+    background-color: rgba(91, 70, 113, 0.55);
+    color: #f8f8f2;
+    border-color: rgba(92, 73, 108, 0.60);
+}
+
+#device-btn.active {
+    background-color: rgba(255, 121, 198, 0.14);
+    color: #ff79c6;
+    border-color: rgba(255, 121, 198, 0.55);
+}
+
 /* ── Slider luminosité (cyan) ───────────────────────────────────────────────── */
 
 scale.bright {
@@ -176,14 +208,55 @@ scale.bright slider:hover {
     font-size: 17px;
     min-width: 28px;
 }
+
+/* ── Section MPRIS ────────────────────────────────────────────────────────── */
+
+#mpris-title {
+    color: #f8f8f2;
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#mpris-artist {
+    color: rgba(248, 248, 242, 0.55);
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 11px;
+}
+
+#mpris-btn {
+    background-color: transparent;
+    color: #e79cfe;
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-width: 0;
+}
+
+#mpris-btn:hover {
+    background-color: rgba(231, 156, 254, 0.15);
+}
+
+#mpris-btn.play {
+    font-size: 20px;
+    color: #ff79c6;
+    padding: 4px 12px;
+}
+
+#mpris-btn.play:hover {
+    background-color: rgba(255, 121, 198, 0.15);
+}
 """
 
 POPUP_WIDTH = 310
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def run(cmd, **kw):
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=2, **kw)
+def run(cmd, env=None, **kw):
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=2,
+                          env=env, **kw)
 
 def get_sink_volume():
     r = run(['wpctl', 'get-volume', '@DEFAULT_AUDIO_SINK@'])
@@ -239,6 +312,93 @@ def _wob(msg):
         except OSError:
             pass
 
+def get_sinks():
+    """Retourne [(sink_name, description, is_default)] — exclut SUSPENDED."""
+    env = {**os.environ, 'LANG': 'C', 'LC_ALL': 'C'}
+    r_default = run(['pactl', 'get-default-sink'], env=env)
+    default_name = r_default.stdout.strip()
+
+    r_full = run(['pactl', 'list', 'sinks'], env=env)
+    sinks, state, name, desc = [], None, None, None
+    for line in r_full.stdout.splitlines():
+        st = re.search(r'^\s+State:\s+(\S+)', line)
+        nm = re.search(r'^\s+Name:\s+(.+)$', line)
+        ds = re.search(r'^\s+Description:\s+(.+)$', line)
+        if st: state = st.group(1)
+        elif nm: name = nm.group(1).strip()
+        elif ds and name:
+            desc = ds.group(1).strip()
+            if state != 'SUSPENDED':
+                sinks.append((name, desc, name == default_name))
+            state, name, desc = None, None, None
+    return sinks
+
+def set_default_sink(name):
+    run(['pactl', 'set-default-sink', name])
+
+def get_sources():
+    """Retourne [(source_name, description, is_default)] — exclut les .monitor."""
+    env = {**os.environ, 'LANG': 'C', 'LC_ALL': 'C'}
+    r_default = run(['pactl', 'get-default-source'], env=env)
+    default_name = r_default.stdout.strip()
+
+    r_full = run(['pactl', 'list', 'sources'], env=env)
+    sources, name, desc = [], None, None
+    for line in r_full.stdout.splitlines():
+        nm = re.search(r'^\s+Name:\s+(.+)$', line)
+        ds = re.search(r'^\s+Description:\s+(.+)$', line)
+        if nm:
+            name = nm.group(1).strip()
+        elif ds and name:
+            desc = ds.group(1).strip()
+            if '.monitor' not in name:
+                sources.append((name, desc, name == default_name))
+            name, desc = None, None
+    return sources
+
+def set_default_source(name):
+    run(['pactl', 'set-default-source', name])
+
+def get_mpris_info():
+    """Retourne dict ou None si pas de lecteur actif."""
+    try:
+        r = run(['playerctl', 'metadata', '--format',
+                 '{{title}}||{{artist}}||{{mpris:artUrl}}||{{status}}'])
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return None
+    if r.returncode != 0 or not r.stdout.strip():
+        return None
+    parts = r.stdout.strip().split('||', 3)
+    if len(parts) < 4:
+        return None
+    title, artist, art_url, status = [p.strip() for p in parts]
+    if not title:
+        return None
+    return {
+        'title':   title,
+        'artist':  artist,
+        'art_url': art_url,
+        'status':  status.lower(),   # 'playing' | 'paused' | 'stopped'
+    }
+
+def source_icon(name, desc):
+    s = (name + desc).lower()
+    if 'bluetooth' in s or 'bluez' in s: return '󰥰'
+    if 'usb' in s:                        return '󱡬'
+    if 'headset' in s or 'headphone' in s: return '󰋎'
+    return '󰍬'
+
+def sink_icon(name, desc):
+    s = (name + desc).lower()
+    if 'hdmi' in s or 'dp-' in s or 'displayport' in s: return '󰡁'
+    if 'bluetooth' in s or 'bluez' in s:                 return '󰥰'
+    if 'usb' in s:                                        return '󱡬'
+    if 'headphone' in s or 'headset' in s:               return '󰋋'
+    return '󰓃'
+
+def short_desc(desc, maxlen=16):
+    return desc if len(desc) <= maxlen else desc[:maxlen - 1] + '…'
+
 def vol_icon(muted):
     return '󰖁' if muted else '󰕾'
 
@@ -250,26 +410,109 @@ def bright_icon(pct):
     if pct < 67: return '󰃟'
     return '󰃠'
 
+# ── Art widget (album art / miniature YouTube) ────────────────────────────────
+
+class ArtWidget(Gtk.DrawingArea):
+    SIZE = 72
+
+    def __init__(self):
+        super().__init__()
+        self._pixbuf = None
+        self._url    = None
+        self.set_size_request(self.SIZE, self.SIZE)
+        self.connect('draw', self._on_draw)
+
+    def load_url(self, url):
+        if url == self._url:
+            return
+        self._url    = url
+        self._pixbuf = None
+        self.queue_draw()
+        if not url:
+            return
+        threading.Thread(target=self._fetch, args=(url,), daemon=True).start()
+
+    def _fetch(self, url):
+        try:
+            if url.startswith('file://'):
+                raw = GdkPixbuf.Pixbuf.new_from_file(url[7:])
+            else:
+                req = urllib.request.Request(
+                    url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = resp.read()
+                loader = GdkPixbuf.PixbufLoader()
+                loader.write(data)
+                loader.close()
+                raw = loader.get_pixbuf()
+
+            if raw:
+                s  = self.SIZE
+                ow, oh = raw.get_width(), raw.get_height()
+                scale  = min(s / ow, s / oh)
+                nw = max(1, int(ow * scale))
+                nh = max(1, int(oh * scale))
+                pixbuf = raw.scale_simple(nw, nh, GdkPixbuf.InterpType.BILINEAR)
+            else:
+                pixbuf = None
+        except Exception:
+            pixbuf = None
+        GLib.idle_add(self._set_pixbuf, pixbuf, url)
+
+    def _set_pixbuf(self, pixbuf, url):
+        if url == self._url:
+            self._pixbuf = pixbuf
+            self.queue_draw()
+        return False
+
+    def _on_draw(self, _widget, cr):
+        s, r = self.SIZE, 10
+
+        # Coins arrondis (clip)
+        cr.new_sub_path()
+        cr.arc(r,     r,     r, math.pi,       3 * math.pi / 2)
+        cr.arc(s - r, r,     r, -math.pi / 2,  0)
+        cr.arc(s - r, s - r, r, 0,              math.pi / 2)
+        cr.arc(r,     s - r, r, math.pi / 2,   math.pi)
+        cr.close_path()
+        cr.clip()
+
+        # Fond violet
+        cr.set_source_rgba(73/255, 49/255, 97/255, 0.85)
+        cr.paint()
+
+        if self._pixbuf:
+            pw = self._pixbuf.get_width()
+            ph = self._pixbuf.get_height()
+            Gdk.cairo_set_source_pixbuf(cr, self._pixbuf,
+                                        (s - pw) / 2, (s - ph) / 2)
+            cr.paint()
+        else:
+            # Icône note de musique (placeholder)
+            layout = PangoCairo.create_layout(cr)
+            layout.set_markup('<span font="JetBrainsMono Nerd Font 24">󰝚</span>')
+            lw, lh = layout.get_size()
+            cr.set_source_rgba(231/255, 156/255, 254/255, 0.45)
+            cr.move_to((s - lw / Pango.SCALE) / 2,
+                       (s - lh / Pango.SCALE) / 2)
+            PangoCairo.show_layout(cr, layout)
+
+
 # ── Popup ─────────────────────────────────────────────────────────────────────
 
 class MediaPopup(Gtk.Window):
     def __init__(self):
         super().__init__()
-        self._blk = False
+        self._blk       = False
+        self._has_mpris = False
 
-        # ── Position ─────────────────────────────────────────────────────────
-        display = Gdk.Display.get_default()
-        monitor = display.get_primary_monitor() if display else None
-        screen_w = monitor.get_geometry().width if monitor else 1920
-        module_center = screen_w - 16 - 210
-        margin_left = max(0, module_center - POPUP_WIDTH // 2)
-
+        # ── Position — ancré à droite, toujours dans l'écran ─────────────────
         GtkLayerShell.init_for_window(self)
         GtkLayerShell.set_layer(self, GtkLayerShell.Layer.OVERLAY)
         GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
-        GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
+        GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, 66)
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, margin_left)
+        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 12)
         GtkLayerShell.set_keyboard_mode(self, GtkLayerShell.KeyboardMode.ON_DEMAND)
         GtkLayerShell.set_exclusive_zone(self, -1)
         self.set_decorated(False)
@@ -295,10 +538,22 @@ class MediaPopup(Gtk.Window):
         box.set_name('container')
         self.add(box)
 
+        # ╔═══ LECTURE (MPRIS) — affiché seulement si lecteur actif ════════════╗
+        mpris_info = get_mpris_info()
+        if mpris_info:
+            self._build_mpris_section(box, mpris_info)
+            sep0 = Gtk.Label(label='─' * 34)
+            sep0.set_name('separator')
+            box.pack_start(sep0, False, False, 0)
+
         # ╔═══ SORTIE ══════════════════════════════════════════════════════════╗
+        sinks = get_sinks()
         box.pack_start(self._section_header('SORTIE', '󰕾'), False, False, 0)
-        box.pack_start(self._device_label(
-            get_node_name('@DEFAULT_AUDIO_SINK@')), False, False, 2)
+        self.sink_device_lbl = self._device_label(
+            get_node_name('@DEFAULT_AUDIO_SINK@'))
+        box.pack_start(self.sink_device_lbl, False, False, 2)
+        if len(sinks) > 1:
+            box.pack_start(self._sink_selector(sinks), False, False, 4)
         sink_row, self.sink_scale, self.sink_pct, self.sink_icon = \
             self._slider_row(sink_vol, sink_muted, 'audio', vol_icon(sink_muted),
                              self._toggle_sink_mute, '@DEFAULT_AUDIO_SINK@')
@@ -309,9 +564,13 @@ class MediaPopup(Gtk.Window):
         sep1.set_name('separator')
         box.pack_start(sep1, False, False, 0)
 
+        sources = get_sources()
         box.pack_start(self._section_header('ENTRÉE', '󰍬'), False, False, 0)
-        box.pack_start(self._device_label(
-            get_node_name('@DEFAULT_AUDIO_SOURCE@')), False, False, 2)
+        self.src_device_lbl = self._device_label(
+            get_node_name('@DEFAULT_AUDIO_SOURCE@'))
+        box.pack_start(self.src_device_lbl, False, False, 2)
+        if len(sources) > 1:
+            box.pack_start(self._source_selector(sources), False, False, 4)
         src_row, self.src_scale, self.src_pct, self.src_icon = \
             self._slider_row(src_vol, src_muted, 'audio', mic_icon(src_muted),
                              self._toggle_src_mute, '@DEFAULT_AUDIO_SOURCE@')
@@ -333,23 +592,167 @@ class MediaPopup(Gtk.Window):
         self.connect('focus-out-event', lambda *_: self.destroy())
         self.show_all()
         # GTK3 bug : set_value() avant réalisation → highlight width=0 à max
-        # Forcer un re-calcul après que les widgets sont visibles
         GLib.idle_add(self._redraw_scales)
         self.grab_focus()
 
-    def _redraw_scales(self):
-        """Force GTK3 à recalculer les highlights.
-        set_value(même_valeur) est un no-op — on oscille ±1 pour déclencher
-        un vrai recalcul de la position du highlight dans le trough."""
+    # ── MPRIS section builder ─────────────────────────────────────────────────
+
+    def _build_mpris_section(self, box, info):
+        box.pack_start(self._section_header('LECTURE', '󰝚'), False, False, 0)
+
+        content = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        content.set_margin_top(4)
+        content.set_margin_bottom(4)
+
+        # Album art
+        self.mpris_art = ArtWidget()
+        content.pack_start(self.mpris_art, False, False, 0)
+
+        # Infos + contrôles
+        info_col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        info_col.set_valign(Gtk.Align.CENTER)
+
+        self.mpris_title = Gtk.Label(label=info['title'])
+        self.mpris_title.set_name('mpris-title')
+        self.mpris_title.set_halign(Gtk.Align.START)
+        self.mpris_title.set_ellipsize(3)
+        self.mpris_title.set_max_width_chars(20)
+        info_col.pack_start(self.mpris_title, False, False, 0)
+
+        self.mpris_artist = Gtk.Label(label=info['artist'] or '—')
+        self.mpris_artist.set_name('mpris-artist')
+        self.mpris_artist.set_halign(Gtk.Align.START)
+        self.mpris_artist.set_ellipsize(3)
+        self.mpris_artist.set_max_width_chars(20)
+        info_col.pack_start(self.mpris_artist, False, False, 0)
+
+        # Contrôles prev / play-pause / next
+        ctrl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        ctrl.set_margin_top(4)
+
+        btn_prev = Gtk.Button(label='󰒮')
+        btn_prev.set_name('mpris-btn')
+        btn_prev.connect('clicked', lambda _: run(['playerctl', 'previous']))
+
+        self.btn_play = Gtk.Button(
+            label='󰏤' if info['status'] == 'playing' else '󰐊')
+        self.btn_play.set_name('mpris-btn')
+        self.btn_play.get_style_context().add_class('play')
+        self.btn_play.connect('clicked', self._on_play_pause)
+
+        btn_next = Gtk.Button(label='󰒭')
+        btn_next.set_name('mpris-btn')
+        btn_next.connect('clicked', lambda _: run(['playerctl', 'next']))
+
+        ctrl.pack_start(btn_prev,       False, False, 0)
+        ctrl.pack_start(self.btn_play,  False, False, 0)
+        ctrl.pack_start(btn_next,       False, False, 0)
+        info_col.pack_start(ctrl, False, False, 0)
+
+        content.pack_start(info_col, True, True, 0)
+        box.pack_start(content, False, False, 4)
+
+        # Charger l'artwork en arrière-plan
+        if info.get('art_url'):
+            self.mpris_art.load_url(info['art_url'])
+
+        self._has_mpris   = True
+        self._mpris_status = info['status']
+
+    def _on_play_pause(self, _btn):
+        run(['playerctl', 'play-pause'])
+        info = get_mpris_info()
+        if info and self._has_mpris:
+            self._mpris_status = info['status']
+            self.btn_play.set_label(
+                '󰏤' if info['status'] == 'playing' else '󰐊')
+
+    # ── Sélecteur de sortie ────────────────────────────────────────────────────
+
+    def _sink_selector(self, sinks):
+        self._sink_btns  = {}
+        self._sink_descs = {}
+        col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        for name, desc, is_default in sinks:
+            self._sink_descs[name] = desc
+            btn = Gtk.Button()
+            btn.set_name('device-btn')
+            btn.set_hexpand(True)
+            lbl = Gtk.Label(label=self._sink_label(name, desc, is_default))
+            lbl.set_halign(Gtk.Align.START)
+            btn.add(lbl)
+            if is_default:
+                btn.get_style_context().add_class('active')
+            btn.connect('clicked', self._on_sink_selected, name)
+            col.pack_start(btn, False, True, 0)
+            self._sink_btns[name] = btn
+        return col
+
+    def _sink_label(self, name, desc, active):
+        check = '  ' if active else ''
+        return f'{sink_icon(name, desc)}  {desc}{check}'
+
+    def _source_selector(self, sources):
+        self._src_btns  = {}
+        self._src_descs = {}
+        col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        for name, desc, is_default in sources:
+            self._src_descs[name] = desc
+            btn = Gtk.Button()
+            btn.set_name('device-btn')
+            btn.set_hexpand(True)
+            lbl = Gtk.Label(label=self._src_label(name, desc, is_default))
+            lbl.set_halign(Gtk.Align.START)
+            btn.add(lbl)
+            if is_default:
+                btn.get_style_context().add_class('active')
+            btn.connect('clicked', self._on_source_selected, name)
+            col.pack_start(btn, False, True, 0)
+            self._src_btns[name] = btn
+        return col
+
+    def _src_label(self, name, desc, active):
+        check = '  ' if active else ''
+        return f'{source_icon(name, desc)}  {desc}{check}'
+
+    def _on_source_selected(self, _btn, name):
+        for n, b in self._src_btns.items():
+            b.get_style_context().remove_class('active')
+            b.get_child().set_label(self._src_label(n, self._src_descs[n], False))
+        self._src_btns[name].get_style_context().add_class('active')
+        self._src_btns[name].get_child().set_label(
+            self._src_label(name, self._src_descs[name], True))
+        set_default_source(name)
+        self.src_device_lbl.set_label(self._src_descs[name])
+        vol, muted = get_source_volume()
         self._blk = True
-        for scale in [self.sink_scale, self.src_scale, self.bright_scale]:
-            v   = scale.get_value()
-            adj = scale.get_adjustment()
-            lo  = adj.get_lower()
-            scale.set_value(max(lo, v - 1))  # valeur différente → GTK recalcule
-            scale.set_value(v)               # retour à la valeur réelle
+        self.src_scale.set_value(vol)
+        self.src_pct.set_label(f'{vol}%')
         self._blk = False
-        return False
+        self._src_muted = muted
+        self._apply_mute(self.src_scale, self.src_icon, muted, mic_icon)
+        subprocess.Popen(['pkill', '-RTMIN+1', 'waybar'],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def _on_sink_selected(self, _btn, name):
+        for n, b in self._sink_btns.items():
+            b.get_style_context().remove_class('active')
+            b.get_child().set_label(
+                self._sink_label(n, self._sink_descs[n], False))
+        self._sink_btns[name].get_style_context().add_class('active')
+        self._sink_btns[name].get_child().set_label(
+            self._sink_label(name, self._sink_descs[name], True))
+        set_default_sink(name)
+        self.sink_device_lbl.set_label(self._sink_descs[name])
+        vol, muted = get_sink_volume()
+        self._blk = True
+        self.sink_scale.set_value(vol)
+        self.sink_pct.set_label(f'{vol}%')
+        self._blk = False
+        self._sink_muted = muted
+        self._apply_mute(self.sink_scale, self.sink_icon, muted, vol_icon)
+        subprocess.Popen(['pkill', '-RTMIN+1', 'waybar'],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # ── Builders UI ───────────────────────────────────────────────────────────
 
@@ -376,7 +779,6 @@ class MediaPopup(Gtk.Window):
         """Retourne (row, scale, pct_label, icon_btn)"""
         row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-        # Icône = bouton mute
         icon_btn = Gtk.Button(label=icon_char)
         icon_btn.set_name('mute-icon' if target == '@DEFAULT_AUDIO_SINK@' else 'mic-icon')
         if muted:
@@ -384,7 +786,6 @@ class MediaPopup(Gtk.Window):
         icon_btn.connect('clicked', mute_cb)
         row.pack_start(icon_btn, False, False, 0)
 
-        # Slider
         scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 5)
         scale.set_value(val)
         scale.set_draw_value(False)
@@ -396,7 +797,6 @@ class MediaPopup(Gtk.Window):
                       self._on_audio_changed(s, pct_lbl, t))
         row.pack_start(scale, True, True, 0)
 
-        # %
         pct_lbl = Gtk.Label(label=f'{val}%')
         pct_lbl.set_name('pct-label')
         pct_lbl.set_halign(Gtk.Align.END)
@@ -469,7 +869,20 @@ class MediaPopup(Gtk.Window):
         self._apply_mute(self.src_scale, self.src_icon,
                          self._src_muted, mic_icon)
 
+    def _redraw_scales(self):
+        """Force GTK3 à recalculer les highlights."""
+        self._blk = True
+        for scale in [self.sink_scale, self.src_scale, self.bright_scale]:
+            v   = scale.get_value()
+            adj = scale.get_adjustment()
+            lo  = adj.get_lower()
+            scale.set_value(max(lo, v - 1))
+            scale.set_value(v)
+        self._blk = False
+        return False
+
     def _refresh(self):
+        # ── Audio ──────────────────────────────────────────────────────────────
         sink_vol, sink_muted = get_sink_volume()
         src_vol,  src_muted  = get_source_volume()
 
@@ -488,6 +901,20 @@ class MediaPopup(Gtk.Window):
         self.src_scale.set_value(src_vol)
         self.src_pct.set_label(f'{src_vol}%')
         self._blk = False
+
+        # ── MPRIS ──────────────────────────────────────────────────────────────
+        if self._has_mpris:
+            info = get_mpris_info()
+            if info:
+                self.mpris_title.set_label(info['title'])
+                self.mpris_artist.set_label(info['artist'] or '—')
+                if info['status'] != self._mpris_status:
+                    self._mpris_status = info['status']
+                    self.btn_play.set_label(
+                        '󰏤' if info['status'] == 'playing' else '󰐊')
+                cur_url = info.get('art_url', '')
+                if cur_url != self.mpris_art._url:
+                    self.mpris_art.load_url(cur_url)
 
         return True
 

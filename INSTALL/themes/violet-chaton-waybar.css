@@ -102,9 +102,11 @@ window#waybar {
 
 #cpu,
 #temperature,
+#custom-cpu-temp,
 #custom-gpu,
 #memory,
 #disk,
+#custom-disks,
 #custom-network,
 #clock,
 #custom-date,
@@ -140,7 +142,8 @@ window#waybar {
 
 /* ── Température ──────────────────────────────────────────────────────────── */
 
-#temperature {
+#temperature,
+#custom-cpu-temp {
     color: rgba(139, 233, 253, 0.60);
     font-size: 11px;
     font-weight: normal;
@@ -148,10 +151,15 @@ window#waybar {
     padding-right: 10px;
 }
 
-#temperature.critical {
+#temperature.critical,
+#custom-cpu-temp.critical {
     color: #f38ba8;
     font-weight: bold;
     animation: pulse-critical 0.8s linear infinite;
+}
+
+#custom-cpu-temp.warning {
+    color: #f9e2af;
 }
 
 /* ── GPU ──────────────────────────────────────────────────────────────────── */
@@ -186,7 +194,8 @@ window#waybar {
 
 /* ── Disque ───────────────────────────────────────────────────────────────── */
 
-#disk {
+#disk,
+#custom-disks {
     color: rgba(255, 121, 198, 0.70);
     font-size: 11px;
     font-weight: normal;
@@ -405,6 +414,8 @@ tooltip label {
 #cpu:hover,
 #memory:hover,
 #disk:hover,
+#custom-disks:hover,
+#custom-cpu-temp:hover,
 #custom-network:hover,
 #wireplumber:hover,
 #backlight:hover,

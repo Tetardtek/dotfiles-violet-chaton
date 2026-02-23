@@ -3,19 +3,17 @@
 
 STATE_FILE="/tmp/waybar_net_state"
 
-# Détecter l'interface active
-IFACE=""
-for candidate in enp7s0 enp6s0 eth0; do
-    if [[ -d "/sys/class/net/$candidate" && "$(cat /sys/class/net/$candidate/operstate 2>/dev/null)" == "up" ]]; then
-        IFACE="$candidate"; TYPE="eth"; break
+# Détecter l'interface active via la route par défaut (portable sur tous les PC)
+IFACE=$(ip route get 1.1.1.1 2>/dev/null \
+    | awk '/dev/{for(i=1;i<=NF;i++) if($i=="dev") print $(i+1)}' \
+    | head -1)
+
+if [[ -n "$IFACE" ]]; then
+    if [[ -d "/sys/class/net/$IFACE/wireless" || -d "/sys/class/net/$IFACE/phy80211" ]]; then
+        TYPE="wifi"
+    else
+        TYPE="eth"
     fi
-done
-if [[ -z "$IFACE" ]]; then
-    for candidate in wlp8s0 wlp0s20f3 wlan0; do
-        if [[ -d "/sys/class/net/$candidate" && "$(cat /sys/class/net/$candidate/operstate 2>/dev/null)" == "up" ]]; then
-            IFACE="$candidate"; TYPE="wifi"; break
-        fi
-    done
 fi
 
 if [[ -z "$IFACE" ]]; then
