@@ -91,6 +91,15 @@ else
     fail "CosmicTheme.Light"
 fi
 
+step "COSMIC AppList (favoris dock — pas d'apps en cours)..."
+backup_dir "$COSMIC_DST/com.system76.CosmicAppList/v1"
+ensure_dir "$COSMIC_DST/com.system76.CosmicAppList/v1"
+if cp "$COSMIC_SRC/com.system76.CosmicAppList/v1/"* "$COSMIC_DST/com.system76.CosmicAppList/v1/" 2>/dev/null; then
+    ok "CosmicAppList (filter_top_levels)"
+else
+    fail "CosmicAppList"
+fi
+
 step "COSMIC Theme Mode (dark)..."
 backup_dir "$COSMIC_DST/com.system76.CosmicTheme.Mode/v1"
 ensure_dir "$COSMIC_DST/com.system76.CosmicTheme.Mode/v1"
