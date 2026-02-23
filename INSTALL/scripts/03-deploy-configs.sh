@@ -293,6 +293,26 @@ deploy_file "$THEMES/violet-chaton-rofi.rasi"    "$HOME/.config/rofi/violet-chat
 section "wob — overlay volume/luminosité"
 deploy_file "$CONFIGS/wob/wob.ini" "$HOME/.config/wob.ini"
 
+# ── Désactiver cosmic-osd (remplacé par wob) ─────────────────────────────────
+section "cosmic-osd — désactivation (wob le remplace)"
+if [ -f /usr/bin/cosmic-osd.real ]; then
+    ok "cosmic-osd déjà désactivé via dpkg-divert"
+elif [ -f /usr/bin/cosmic-osd ]; then
+    step "Divert de cosmic-osd (mot de passe sudo requis)..."
+    if sudo dpkg-divert --add --rename --divert /usr/bin/cosmic-osd.real /usr/bin/cosmic-osd; then
+        printf '#!/usr/bin/env bash\nexec sleep infinity\n' > /tmp/cosmic-osd-fake
+        chmod +x /tmp/cosmic-osd-fake
+        sudo cp /tmp/cosmic-osd-fake /usr/bin/cosmic-osd
+        rm -f /tmp/cosmic-osd-fake
+        pkill -x cosmic-osd 2>/dev/null
+        ok "cosmic-osd désactivé — wob gère les overlays"
+    else
+        warn "dpkg-divert échoué — cosmic-osd reste actif"
+    fi
+else
+    warn "cosmic-osd introuvable — rien à faire"
+fi
+
 # ── Logo fastfetch ─────────────────────────────────────────────────────────────
 section "Logo fastfetch"
 if [ -f "$SCRIPT_DIR/assets/violet-chaton-logo.png" ]; then
