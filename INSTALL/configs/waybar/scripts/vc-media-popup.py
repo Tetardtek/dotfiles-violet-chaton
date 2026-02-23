@@ -211,6 +211,7 @@ def set_sink_vol(v):
 
 def set_source_vol(v):
     run(['wpctl', 'set-volume', '@DEFAULT_AUDIO_SOURCE@', f'{v}%'])
+    _wob(f'v:{v}')
 
 def toggle_sink_mute():
     run(['wpctl', 'set-mute', '@DEFAULT_AUDIO_SINK@', 'toggle'])
