@@ -63,7 +63,8 @@ CHOICE=$(echo "$FULL_LIST" | \
          --height 500 \
          --x 16 \
          --y 70 \
-         --location top_left)
+         --location top_left \
+         --cache-file=/dev/null)
 
 [[ -z "$CHOICE" ]] && exit 0
 
