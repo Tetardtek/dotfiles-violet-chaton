@@ -40,6 +40,12 @@ fi
 
 # ── Affichage JSON ────────────────────────────────────────────────────────────
 
+# PC fixe ou VM sans gestion de profil → module masqué
+if [[ ! -f /sys/firmware/acpi/platform_profile ]]; then
+    printf '{"text":"","class":"unavailable"}\n'
+    exit 0
+fi
+
 PROFILE=$(cat /sys/firmware/acpi/platform_profile 2>/dev/null || echo "unknown")
 
 case "$PROFILE" in
