@@ -27,6 +27,14 @@ window {
     padding: 10px 16px;
 }
 
+#wob-box.vol {
+    border-color: rgba(255, 121, 198, 0.85);
+}
+
+#wob-box.bright {
+    border-color: rgba(139, 233, 253, 0.85);
+}
+
 #wob-icon {
     font-family: "JetBrainsMono Nerd Font";
     font-size: 15px;
@@ -122,6 +130,7 @@ class WobOverlay(Gtk.Window):
         # ── Layout ───────────────────────────────────────────────────────────
         outer = Gtk.Box()
         outer.set_name('wob-box')
+        self._box = outer
         self.add(outer)
 
         self._icon_lbl = Gtk.Label()
@@ -154,10 +163,13 @@ class WobOverlay(Gtk.Window):
             icon = _icon(VOL_ICONS, val)
             css_class = 'vol'
 
-        sc = self._bar.get_style_context()
+        sc  = self._bar.get_style_context()
+        bsc = self._box.get_style_context()
         for c in ['vol', 'bright']:
             sc.remove_class(c)
+            bsc.remove_class(c)
         sc.add_class(css_class)
+        bsc.add_class(css_class)
 
         self._icon_lbl.set_label(icon)
         self._icon_lbl.set_markup(
@@ -185,7 +197,10 @@ def _fifo_reader(overlay):
         try:
             if not os.path.exists(FIFO):
                 os.mkfifo(FIFO)
-            with open(FIFO, 'r') as f:
+            # O_RDWR : ne bloque pas à l'ouverture ET garde le FIFO ouvert
+            # entre deux écritures (pas d'EOF même sans writer actif)
+            fd = os.open(FIFO, os.O_RDWR)
+            with os.fdopen(fd, 'r') as f:
                 for line in f:
                     line = line.strip()
                     if not line:

@@ -26,7 +26,7 @@ window {
 /* ── Labels ────────────────────────────────────────────────────────────────── */
 
 #section-label {
-    color: rgba(248, 248, 242, 0.45);
+    color: #ff79c6;
     font-family: "JetBrainsMono Nerd Font";
     font-size: 10px;
     font-weight: bold;
@@ -94,6 +94,10 @@ window {
 
 /* ── Sliders audio (rose) ───────────────────────────────────────────────────── */
 
+scale.audio {
+    min-height: 22px;
+}
+
 scale.audio trough {
     background-color: rgba(92, 73, 108, 0.55);
     border-radius: 3px;
@@ -131,6 +135,10 @@ scale.audio.muted slider {
 }
 
 /* ── Slider luminosité (cyan) ───────────────────────────────────────────────── */
+
+scale.bright {
+    min-height: 22px;
+}
 
 scale.bright trough {
     background-color: rgba(92, 73, 108, 0.55);
