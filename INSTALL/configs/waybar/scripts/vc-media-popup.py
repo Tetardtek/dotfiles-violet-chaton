@@ -331,7 +331,19 @@ class MediaPopup(Gtk.Window):
                      self.destroy() if e.keyval == Gdk.KEY_Escape else None)
         self.connect('focus-out-event', lambda *_: self.destroy())
         self.show_all()
+        # GTK3 bug : set_value() avant réalisation → highlight width=0 à max
+        # Forcer un re-calcul après que les widgets sont visibles
+        GLib.idle_add(self._redraw_scales)
         self.grab_focus()
+
+    def _redraw_scales(self):
+        """Force GTK3 à recalculer les positions highlight après réalisation."""
+        self._blk = True
+        self.sink_scale.set_value(self.sink_scale.get_value())
+        self.src_scale.set_value(self.src_scale.get_value())
+        self.bright_scale.set_value(self.bright_scale.get_value())
+        self._blk = False
+        return False
 
     # ── Builders UI ───────────────────────────────────────────────────────────
 
