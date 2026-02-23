@@ -82,6 +82,15 @@ else
     fail "CosmicTheme.Dark"
 fi
 
+step "COSMIC Theme Light..."
+backup_dir "$COSMIC_DST/com.system76.CosmicTheme.Light/v1"
+ensure_dir "$COSMIC_DST/com.system76.CosmicTheme.Light/v1"
+if cp "$COSMIC_SRC/com.system76.CosmicTheme.Light/v1/"* "$COSMIC_DST/com.system76.CosmicTheme.Light/v1/" 2>/dev/null; then
+    ok "CosmicTheme.Light"
+else
+    fail "CosmicTheme.Light"
+fi
+
 step "COSMIC Theme Mode (dark)..."
 backup_dir "$COSMIC_DST/com.system76.CosmicTheme.Mode/v1"
 ensure_dir "$COSMIC_DST/com.system76.CosmicTheme.Mode/v1"
@@ -204,6 +213,78 @@ PYEOF
         fail "Vivaldi injection échouée"
     fi
 fi
+
+# ── Waybar ─────────────────────────────────────────────────────────────────────
+section "Waybar — island floating 3 pills"
+deploy_file "$CONFIGS/waybar/config"       "$HOME/.config/waybar/config"
+deploy_file "$THEMES/violet-chaton-waybar.css" "$HOME/.config/waybar/style.css"
+deploy_file "$CONFIGS/waybar/cava-waybar.cfg"  "$HOME/.config/waybar/cava-waybar.cfg"
+
+step "Scripts waybar..."
+ensure_dir "$HOME/.config/waybar/scripts"
+for script in "$CONFIGS/waybar/scripts/"*.sh; do
+    dst="$HOME/.config/waybar/scripts/$(basename "$script")"
+    cp "$script" "$dst" && chmod +x "$dst"
+done
+for script in "$CONFIGS/waybar/scripts/"*.py; do
+    dst="$HOME/.config/waybar/scripts/$(basename "$script")"
+    cp "$script" "$dst" && chmod +x "$dst"
+done
+ok "Scripts waybar"
+
+# ── Autostart ───────────────────────────────────────────────────────────────────
+section "Autostart — waybar + wob"
+ensure_dir "$HOME/.config/autostart"
+deploy_file "$CONFIGS/autostart/waybar.desktop" "$HOME/.config/autostart/waybar.desktop"
+deploy_file "$CONFIGS/autostart/wob.desktop"    "$HOME/.config/autostart/wob.desktop"
+
+# ── Règle sudoers — profil énergie ──────────────────────────────────────────────
+section "Sudoers — profil énergie ACPI"
+SUDOERS_FILE="/etc/sudoers.d/waybar-power-profile"
+SUDOERS_RULE="$USER ALL=(ALL) NOPASSWD: /usr/bin/tee /sys/firmware/acpi/platform_profile"
+if [ -f "$SUDOERS_FILE" ]; then
+    ok "Règle sudoers déjà présente"
+else
+    step "Création de la règle sudoers (mot de passe sudo requis)..."
+    echo "$SUDOERS_RULE" > /tmp/waybar-pp-sudoers
+    if sudo cp /tmp/waybar-pp-sudoers "$SUDOERS_FILE" && sudo chmod 440 "$SUDOERS_FILE"; then
+        rm -f /tmp/waybar-pp-sudoers
+        ok "Règle sudoers créée"
+    else
+        rm -f /tmp/waybar-pp-sudoers
+        warn "Échec sudoers — changement de profil énergie nécessitera sudo"
+    fi
+fi
+
+# ── Règle udev — permissions platform_profile ────────────────────────────────
+section "udev — platform_profile accessible au groupe video"
+UDEV_FILE="/etc/udev/rules.d/90-platform-profile.rules"
+if [ -f "$UDEV_FILE" ]; then
+    ok "Règle udev déjà présente"
+else
+    step "Création de la règle udev (mot de passe sudo requis)..."
+    echo 'ACTION=="add|change", KERNEL=="platform_profile", SUBSYSTEM=="acpi", RUN+="/bin/chmod g+w /sys/firmware/acpi/platform_profile", RUN+="/bin/chgrp video /sys/firmware/acpi/platform_profile"' \
+        > /tmp/90-platform-profile.rules
+    if sudo cp /tmp/90-platform-profile.rules "$UDEV_FILE" && sudo chmod 644 "$UDEV_FILE"; then
+        rm -f /tmp/90-platform-profile.rules
+        sudo chmod g+w /sys/firmware/acpi/platform_profile 2>/dev/null
+        sudo chgrp video /sys/firmware/acpi/platform_profile 2>/dev/null
+        ok "Règle udev créée"
+    else
+        rm -f /tmp/90-platform-profile.rules
+        warn "Échec udev — redémarrage requis pour les permissions platform_profile"
+    fi
+fi
+
+# ── Rofi ────────────────────────────────────────────────────────────────────────
+section "Rofi — thème violet-chaton"
+ensure_dir "$HOME/.config/rofi"
+deploy_file "$CONFIGS/rofi/config.rasi"          "$HOME/.config/rofi/config.rasi"
+deploy_file "$THEMES/violet-chaton-rofi.rasi"    "$HOME/.config/rofi/violet-chaton.rasi"
+
+# ── wob ─────────────────────────────────────────────────────────────────────────
+section "wob — overlay volume/luminosité"
+deploy_file "$CONFIGS/wob/wob.ini" "$HOME/.config/wob.ini"
 
 # ── Logo fastfetch ─────────────────────────────────────────────────────────────
 section "Logo fastfetch"

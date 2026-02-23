@@ -1,0 +1,7 @@
+configuration {
+    font:          "JetBrainsMono Nerd Font 13";
+    show-icons:    false;
+    click-to-exit: true;
+}
+
+@theme "violet-chaton"

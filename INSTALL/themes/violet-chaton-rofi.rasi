@@ -1,0 +1,137 @@
+/* ── violet-chaton rofi theme ─────────────────────────────────────────────── */
+
+* {
+    bg0:      #261537;
+    bg1:      #341c4a;
+    surface:  #493161;
+    pink:     #ff79c6;
+    purple:   #e79cfe;
+    cyan:     #8be9fd;
+    text:     #f8f8f2;
+    muted:    #6c7086;
+    overlay:  #9399b2;
+
+    background-color: transparent;
+    text-color:       @text;
+}
+
+/* ── Fenêtre — positionnée sous les pills ─────────────────────────────────── */
+
+window {
+    background-color: rgba(38, 21, 55, 0.94);
+    border:           2px;
+    border-color:     rgba(255, 121, 198, 0.38);
+    border-radius:    14px;
+    width:            500px;
+    padding:          0px;
+}
+
+/* ── Layout — résultats en haut, recherche en bas ─────────────────────────── */
+
+mainbox {
+    background-color: transparent;
+    padding:          10px;
+    spacing:          0;
+    children:         [ listview, inputbar ];
+}
+
+/* ── Liste des résultats ──────────────────────────────────────────────────── */
+
+listview {
+    background-color: transparent;
+    padding:          4px 0 8px 0;
+    spacing:          2px;
+    lines:            9;
+    columns:          1;
+    scrollbar:        false;
+    dynamic:          false;
+}
+
+element {
+    background-color: transparent;
+    border-radius:    8px;
+    padding:          7px 10px;
+    spacing:          10px;
+    orientation:      horizontal;
+}
+
+element selected {
+    background-color: rgba(255, 121, 198, 0.16);
+    border:           1px;
+    border-color:     rgba(255, 121, 198, 0.32);
+}
+
+element hover {
+    background-color: rgba(255, 121, 198, 0.16);
+    border:           1px;
+    border-color:     rgba(255, 121, 198, 0.32);
+}
+
+element-icon {
+    size:             22px;
+    background-color: transparent;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       @text;
+    vertical-align:   0.5;
+    highlight:        bold;
+}
+
+element-text selected {
+    text-color: @pink;
+}
+
+element-text hover {
+    text-color: @pink;
+}
+
+/* ── Séparateur visuel avant la recherche ─────────────────────────────────── */
+
+inputbar {
+    background-color: rgba(52, 28, 74, 0.75);
+    border-radius:    0 0 12px 12px;
+    border:           1px;
+    border-color:     rgba(92, 73, 108, 0.50);
+    padding:          9px 14px;
+    spacing:          8px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @pink;
+    font:             "JetBrainsMono Nerd Font Bold 14";
+    vertical-align:   0.5;
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @text;
+    placeholder:      "Rechercher une application...";
+    placeholder-color: @muted;
+    vertical-align:   0.5;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+
+scrollbar {
+    background-color: rgba(92, 73, 108, 0.30);
+    handle-color:     rgba(255, 121, 198, 0.40);
+    handle-width:     4px;
+    border-radius:    2px;
+    padding:          0;
+}
+
+/* ── Messages ─────────────────────────────────────────────────────────────── */
+
+message {
+    background-color: transparent;
+    padding:          4px 8px;
+}
+
+textbox {
+    text-color:       @overlay;
+    background-color: transparent;
+}

@@ -1,0 +1,312 @@
+{
+    // ── violet-chaton Waybar — island floating 3 pills ──────────────────────
+    //  LEFT   : launcher | cpu + temp | gpu | ram | disk | network
+    //  CENTER : cava | clock | date | mpris
+    //  RIGHT  : wireplumber | backlight | bluetooth | idle_inhibitor |
+    //           battery | power-profile | keyboard-state |
+    //           systemd-failed | uptime | tray
+    // ────────────────────────────────────────────────────────────────────────
+
+    "layer": "top",
+    "position": "top",
+    "height": 60,
+    "margin-top": 0,
+    "margin-left": 16,
+    "margin-right": 16,
+    "spacing": 0,
+    "exclusive": true,
+
+    "modules-left": [
+        "custom/launcher",
+        "custom/sep",
+        "cpu",
+        "temperature",
+        "custom/gpu",
+        "memory",
+        "disk",
+        "custom/sep",
+        "custom/network"
+    ],
+
+    "modules-center": [
+        "custom/cava",
+        "clock",
+        "custom/date",
+        "mpris"
+    ],
+
+    "modules-right": [
+        "wireplumber",
+        "backlight",
+        "bluetooth",
+        "custom/sep",
+        "idle_inhibitor",
+        "custom/sep",
+        "battery",
+        "custom/power-profile",
+        "custom/sep",
+        "custom/uptime",
+        "tray",
+        "custom/power"
+    ],
+
+    // ── Launcher ────────────────────────────────────────────────────────────
+
+    "custom/launcher": {
+        "format": "󰊠",
+        "tooltip": false,
+        "on-click": "~/.config/waybar/scripts/rofi-launcher.sh"
+    },
+
+    // ── Séparateur ──────────────────────────────────────────────────────────
+
+    "custom/sep": {
+        "format": "|",
+        "tooltip": false
+    },
+
+    // ── CPU ─────────────────────────────────────────────────────────────────
+
+    "cpu": {
+        "format": " {usage}%",
+        "tooltip-format": "<b>Intel i5-12450H</b>\n<span color='#8be9fd'> {usage}%</span>  <span color='#6c7086'>@ {avg_frequency} GHz</span>\n\n<span color='#e79cfe'>T00</span> {usage0}%   <span color='#e79cfe'>T01</span> {usage1}%   <span color='#e79cfe'>T02</span> {usage2}%   <span color='#e79cfe'>T03</span> {usage3}%\n<span color='#e79cfe'>T04</span> {usage4}%   <span color='#e79cfe'>T05</span> {usage5}%   <span color='#e79cfe'>T06</span> {usage6}%   <span color='#e79cfe'>T07</span> {usage7}%\n<span color='#e79cfe'>T08</span> {usage8}%   <span color='#e79cfe'>T09</span> {usage9}%   <span color='#e79cfe'>T10</span> {usage10}%   <span color='#e79cfe'>T11</span> {usage11}%",
+        "states": {
+            "warning":  70,
+            "critical": 90
+        },
+        "interval": 2
+    },
+
+    // ── Température ─────────────────────────────────────────────────────────
+
+    "temperature": {
+        "thermal-zone": 9,
+        "format": " {temperatureC}°",
+        "format-critical": " {temperatureC}°",
+        "critical-threshold": 80,
+        "tooltip": false,
+        "interval": 2
+    },
+
+    // ── GPU ─────────────────────────────────────────────────────────────────
+
+    "custom/gpu": {
+        "exec": "~/.config/waybar/scripts/gpu.sh",
+        "return-type": "json",
+        "interval": 2,
+        "format": "{}"
+    },
+
+    // ── RAM ─────────────────────────────────────────────────────────────────
+
+    "memory": {
+        "format": " {used:0.1f}G",
+        "tooltip-format": " RAM\n{used:0.1f} GiB / {total:0.1f} GiB\n{percentage}% utilisé",
+        "states": {
+            "warning":  75,
+            "critical": 90
+        },
+        "interval": 2
+    },
+
+    // ── Disque ──────────────────────────────────────────────────────────────
+
+    "disk": {
+        "format": "󰋊 {used}",
+        "tooltip-format": "󰋊 Disque /\n{used} / {total}\n{percentage_used}% utilisé",
+        "interval": 30
+    },
+
+    // ── Réseau ──────────────────────────────────────────────────────────────
+
+    "custom/network": {
+        "exec": "~/.config/waybar/scripts/network.sh",
+        "return-type": "json",
+        "interval": 2,
+        "format": "{}"
+    },
+
+    // ── CAVA ────────────────────────────────────────────────────────────────
+
+    "custom/cava": {
+        "exec": "~/.config/waybar/scripts/cava-read.sh",
+        "return-type": "json",
+        "interval": 1,
+        "format": "{}",
+        "tooltip": false
+    },
+
+    // ── Horloge ─────────────────────────────────────────────────────────────
+
+    "clock": {
+        "format": " {:%H:%M}",
+        "format-alt": " {:%H:%M:%S}",
+        "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "month",
+            "on-scroll": 1,
+            "format": {
+                "months":    "<span color='#ff79c6'><b>{}</b></span>",
+                "days":      "<span color='#f8f8f2'>{}</span>",
+                "weeks":     "<span color='#8be9fd'><b>W{}</b></span>",
+                "weekdays":  "<span color='#e79cfe'><b>{}</b></span>",
+                "today":     "<span color='#ff79c6'><b><u>{}</u></b></span>"
+            }
+        },
+        "interval": 1
+    },
+
+    // ── Date ────────────────────────────────────────────────────────────────
+
+    "custom/date": {
+        "exec": "LC_ALL=fr_FR.UTF-8 date '+%a %d %b' | awk '{print toupper(substr($0,1,1)) substr($0,2)}'",
+        "interval": 60,
+        "tooltip": false
+    },
+
+    // ── MPRIS ───────────────────────────────────────────────────────────────
+
+    "mpris": {
+        "format": "{player_icon}  {dynamic}",
+        "format-paused": "{player_icon}  <i>{dynamic}</i>",
+        "player-icons": {
+            "default":  "󰎈",
+            "spotify":  "󰓇",
+            "firefox":  "󰈹",
+            "chromium": "󰊯",
+            "vlc":      "󰕼"
+        },
+        "status-icons": {
+            "paused": "󰏤",
+            "playing": "󰐊",
+            "stopped": "󰐊"
+        },
+        "dynamic-len": 30,
+        "ignored-players": ["firefox"],
+        "tooltip-format": "{player} — {title}\n{artist}\n{album}"
+    },
+
+    // ── Volume (wireplumber) ─────────────────────────────────────────────────
+
+    "wireplumber": {
+        "format":       "{icon} {volume}%",
+        "format-muted": "󰖁 {volume}%",
+        "format-icons": ["󰕿", "󰖀", "󰕾"],
+        "on-click":       "python3 ~/.config/waybar/scripts/vc-media-popup.py",
+        "on-click-right": "~/.config/waybar/scripts/wob-volume.sh mute",
+        "on-scroll-up":   "~/.config/waybar/scripts/wob-volume.sh up",
+        "on-scroll-down": "~/.config/waybar/scripts/wob-volume.sh down",
+        "tooltip-format": "󰕾 Volume : {volume}%\n{node_name}"
+    },
+
+    // ── Luminosité ──────────────────────────────────────────────────────────
+
+    "backlight": {
+        "format":       "{icon} {percent}%",
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
+        "tooltip":      false,
+        "on-click":       "python3 ~/.config/waybar/scripts/vc-media-popup.py",
+        "on-scroll-up":   "~/.config/waybar/scripts/wob-brightness.sh up",
+        "on-scroll-down": "~/.config/waybar/scripts/wob-brightness.sh down"
+    },
+
+    // ── Bluetooth ───────────────────────────────────────────────────────────
+
+    "bluetooth": {
+        "format":           "󰂯",
+        "format-disabled":  "󰂲",
+        "format-connected": "󰂱 {device_alias}",
+        "tooltip-format":   "{controller_alias} — {controller_address}\n{num_connections} connecté(s)",
+        "tooltip-format-connected": "{controller_alias}\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "  {device_alias} ({device_address})"
+    },
+
+    // ── Idle inhibitor ──────────────────────────────────────────────────────
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated":   "󰅶",
+            "deactivated": "󰾪"
+        },
+        "tooltip-format-activated":   "Veille désactivée",
+        "tooltip-format-deactivated": "Veille active"
+    },
+
+    // ── Batterie ────────────────────────────────────────────────────────────
+
+    "battery": {
+        "bat": "BAT1",
+        "states": {
+            "full":     95,
+            "good":     80,
+            "warning":  30,
+            "critical": 15
+        },
+        "format":          "{icon} {capacity}%",
+        "format-charging": "󱐋 {capacity}%",
+        "format-plugged":  "󰚥 {capacity}%",
+        "format-full":     "󰁹 {capacity}%",
+        "format-icons":    ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "tooltip-format":  "Batterie : {capacity}%\n{timeTo}\nCycles estimés",
+        "interval": 30
+    },
+
+    // ── Profil énergie ──────────────────────────────────────────────────────
+
+    "custom/power-profile": {
+        "exec": "~/.config/waybar/scripts/power-profile.sh",
+        "return-type": "json",
+        "interval": 5,
+        "signal": 8,
+        "on-click": "~/.config/waybar/scripts/power-profile.sh --toggle"
+    },
+
+    // ── Clavier ─────────────────────────────────────────────────────────────
+
+    "keyboard-state": {
+        "numlock": true,
+        "capslock": true,
+        "format": {
+            "numlock":  "{icon}",
+            "capslock": "{icon}"
+        },
+        "format-icons": {
+            "locked":   "",
+            "unlocked": ""
+        }
+    },
+
+    // ── Systemd failed ──────────────────────────────────────────────────────
+
+    "systemd-failed-units": {
+        "format": "󰚌 {nr_failed}",
+        "format-ok": "",
+        "hide-on-ok": true,
+        "system": true,
+        "user":   true
+    },
+
+    // ── Uptime ──────────────────────────────────────────────────────────────
+
+    "custom/uptime": {
+        "exec": "awk '{s=$1; d=int(s/86400); h=int((s%86400)/3600); m=int((s%3600)/60); if(d>0) printf \"󰅐 %dj %dh\",d,h; else if(h>0) printf \"󰅐 %dh %dm\",h,m; else printf \"󰅐 %dm\",m}' /proc/uptime",
+        "interval": 60,
+        "tooltip": false
+    },
+
+    // ── Tray ────────────────────────────────────────────────────────────────
+
+    "tray": {
+        "spacing":   8,
+        "icon-size": 16
+    },
+
+    // ── Bouton power ────────────────────────────────────────────────────────
+
+    "custom/power": {
+        "format":   "󰐥",
+        "tooltip":  false,
+        "on-click": "~/.config/waybar/scripts/power-menu.sh"
+    }
+}
