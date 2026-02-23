@@ -63,6 +63,15 @@ Installe les outils via le gestionnaire de paquets système :
 | `w3m`            | Navigateur web en mode texte dans le terminal |
 | `jp2a`           | Conversion d'images JPEG/PNG en ASCII art |
 | `qalc`           | Calculatrice CLI — unités, conversions, expressions complexes |
+| `waybar`         | Barre de statut Wayland 3-pills glassmorphism |
+| `wob`            | Overlay volume/luminosité animé |
+| `wofi`           | Launcher d'applications et menu power |
+| `brightnessctl`  | Contrôle de la luminosité rétroéclairage |
+| `playerctl`      | Contrôle MPRIS (lecture/pause, titre en cours) |
+| `wireplumber`    | Gestionnaire audio PipeWire (`wpctl`) |
+| `python3-gi`     | Bindings Python GTK3 (popups volume/luminosité) |
+| `gir1.2-gtk-3.0` | Introspection GTK3 pour Python |
+| `gir1.2-gtklayershell-0.1` | Layer-shell Wayland pour popups GTK flottants |
 
 Définit aussi **zsh comme shell par défaut** via `chsh`.
 
@@ -139,9 +148,30 @@ Le chemin exact est affiché à la fin du script si des fichiers ont été sauve
 
 **COSMIC Desktop (entièrement automatique) :**
 - `~/.config/cosmic/com.system76.CosmicTheme.Dark/v1/` — palette violet-chaton complète
+- `~/.config/cosmic/com.system76.CosmicTheme.Light/v1/` — palette violet-chaton (mode clair)
 - `~/.config/cosmic/com.system76.CosmicTheme.Mode/v1/is_dark` — mode sombre activé
 - `~/.config/cosmic/com.system76.CosmicTerm/v1/` — police JetBrains Mono, couleurs, profil
 - `~/.config/cosmic/com.system76.CosmicTk/v1/` — icônes candy-icons, polices UI 0xProto
+
+**Waybar — island floating 3 pills :**
+- `~/.config/waybar/config` — modules left/center/right
+- `~/.config/waybar/style.css` — glassmorphism, bordures roses, animations
+- `~/.config/waybar/cava-waybar.cfg` — config CAVA dédié waybar
+- `~/.config/waybar/scripts/` — tous les scripts (gpu, network, power-profile, cava, wob, popups GTK)
+- `~/.config/autostart/waybar.desktop` — démarrage automatique avec COSMIC
+- `~/.config/autostart/wob.desktop` — démarrage automatique de l'overlay wob
+
+**Wofi — launcher + menu power :**
+- `~/.config/wofi/config` — configuration wofi
+- `~/.config/wofi/style.css` — thème violet-chaton (launcher apps)
+- `~/.config/wofi/power-style.css` — thème violet-chaton (menu power)
+
+**wob — overlay volume/luminosité :**
+- `~/.config/wob.ini` — couleurs violet-chaton, position bas de l'écran
+
+**Système (avec sudo) :**
+- `/etc/sudoers.d/waybar-power-profile` — changement de profil énergie sans mot de passe
+- `/etc/udev/rules.d/90-platform-profile.rules` — permissions groupe `video` sur platform_profile
 
 **Vivaldi (avec pause de sécurité) :**
 - Si Vivaldi n'a pas encore été lancé, le script s'arrête et demande de le démarrer une fois
@@ -226,6 +256,28 @@ gtk-update-icon-cache ~/.local/share/icons/candy-icons-master
 gsettings set org.gnome.desktop.interface icon-theme 'candy-icons-master'
 ```
 
+### Waybar ne démarre pas
+
+```bash
+waybar &   # tester manuellement, lire les erreurs
+pkill -SIGUSR2 waybar   # recharger la config à chaud
+```
+
+### Popups volume/luminosité ne s'ouvrent pas
+
+Vérifier que les dépendances Python sont installées :
+```bash
+python3 -c "import gi; gi.require_version('GtkLayerShell', '0.1'); print('OK')"
+```
+
+### Profil énergie ne change pas au clic
+
+Vérifier que la règle sudoers et les permissions udev sont en place :
+```bash
+ls -la /sys/firmware/acpi/platform_profile   # doit être g+w groupe video
+cat /etc/sudoers.d/waybar-power-profile
+```
+
 ---
 
 ## Raccourcis configurés
@@ -283,7 +335,18 @@ INSTALL/
 │   ├── atuin.toml
 │   ├── lazygit.yml
 │   ├── yazi.toml
-│   └── glow.yml
+│   ├── glow.yml
+│   ├── autostart/
+│   │   ├── waybar.desktop           démarrage automatique waybar
+│   │   └── wob.desktop              démarrage automatique wob
+│   ├── waybar/
+│   │   ├── config                   modules 3-pills
+│   │   ├── cava-waybar.cfg          config CAVA dédiée waybar
+│   │   └── scripts/                 gpu, network, power-profile, cava, wob, popups GTK
+│   ├── wofi/
+│   │   └── config                   config wofi
+│   └── wob/
+│       └── wob.ini                  overlay volume/luminosité
 ├── assets/
 │   └── violet-chaton-logo.png    logo fastfetch (1024×1024)
 └── themes/                       tous les fichiers de thème violet-chaton
@@ -296,8 +359,12 @@ INSTALL/
     ├── violet-chaton-ls-colors.sh
     ├── violet-chaton-vivaldi.json       thème Rice Violet-Chaton pour Vivaldi
     ├── violet-chaton.theme.css          thème Discord/Vesktop compilé
+    ├── violet-chaton-waybar.css         CSS 3-pills glassmorphism
+    ├── violet-chaton-wofi.css           thème wofi launcher
+    ├── violet-chaton-wofi-power.css     thème wofi menu power
     ├── cosmic/                          configs COSMIC déployées automatiquement
     │   ├── com.system76.CosmicTheme.Dark/v1/
+    │   ├── com.system76.CosmicTheme.Light/v1/
     │   ├── com.system76.CosmicTheme.Mode/v1/
     │   ├── com.system76.CosmicTerm/v1/
     │   └── com.system76.CosmicTk/v1/
@@ -317,6 +384,16 @@ cp ~/.config/starship.toml ~/Documents/config-violet-chaton/INSTALL/configs/star
 # Mettre à jour les configs COSMIC
 cp ~/.config/cosmic/com.system76.CosmicTerm/v1/* \
    ~/Documents/config-violet-chaton/INSTALL/themes/cosmic/com.system76.CosmicTerm/v1/
+
+# Mettre à jour la config ou le CSS waybar
+cp ~/.config/waybar/config \
+   ~/Documents/config-violet-chaton/INSTALL/configs/waybar/config
+cp ~/.config/waybar/style.css \
+   ~/Documents/config-violet-chaton/INSTALL/themes/violet-chaton-waybar.css
+
+# Mettre à jour un script waybar
+cp ~/.config/waybar/scripts/power-profile.sh \
+   ~/Documents/config-violet-chaton/INSTALL/configs/waybar/scripts/power-profile.sh
 ```
 
 ---

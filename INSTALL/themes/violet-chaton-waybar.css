@@ -1,0 +1,419 @@
+/* ── violet-chaton Waybar — island floating 3 pills glassmorphism ───────────
+ *
+ *  Palette :
+ *  bg-medium   rgba(52, 28, 74, 0.88)   #341c4a
+ *  surface     rgba(73, 49, 97, 0.95)   #493161
+ *  pink        #ff79c6  accent primaire
+ *  purple      #e79cfe  accent secondaire
+ *  cyan        #8be9fd  info
+ *  text        #f8f8f2  texte principal
+ *  muted       #6c7086  texte secondaire
+ *  warning     #f9e2af
+ *  danger      #f38ba8
+ *  success     #a6e3a1
+ *  border      #5C496C
+ *
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Reset global ─────────────────────────────────────────────────────────── */
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+    font-size: 13px;
+    font-weight: bold;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+    transition: all 0.2s ease;
+}
+
+/* ── Fenêtre — fond transparent entre les pills ───────────────────────────── */
+
+window#waybar {
+    background: transparent;
+    color: #f8f8f2;
+}
+
+/* ── Pills (glassmorphism) ────────────────────────────────────────────────── */
+
+.modules-left,
+.modules-center,
+.modules-right {
+    background: rgba(52, 28, 74, 0.88);
+    border-radius: 14px;
+    border: 3px solid rgba(255, 121, 198, 0.78);
+    margin: 8px 2px 8px 2px;
+}
+
+/* Hover pill glow */
+.modules-left:hover,
+.modules-center:hover,
+.modules-right:hover {
+    border-color: #ff79c6;
+    box-shadow:
+        0 4px 28px rgba(231, 156, 254, 0.18),
+        0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+/* ── Animations ───────────────────────────────────────────────────────────── */
+
+@keyframes pulse-critical {
+    0%   { color: #f38ba8; }
+    50%  { color: rgba(243, 139, 168, 0.35); }
+    100% { color: #f38ba8; }
+}
+
+@keyframes pulse-warning {
+    0%   { color: #f9e2af; }
+    50%  { color: rgba(249, 226, 175, 0.50); }
+    100% { color: #f9e2af; }
+}
+
+@keyframes glow-pink {
+    0%   { box-shadow: 0 0 6px rgba(255, 121, 198, 0.4); }
+    50%  { box-shadow: 0 0 14px rgba(255, 121, 198, 0.8); }
+    100% { box-shadow: 0 0 6px rgba(255, 121, 198, 0.4); }
+}
+
+/* ── Launcher ─────────────────────────────────────────────────────────────── */
+
+#custom-launcher {
+    color: #ff79c6;
+    font-size: 19px;
+    padding: 0 14px 0 18px;
+    border-radius: 14px 0 0 14px;
+}
+
+#custom-launcher:hover {
+    color: #e79cfe;
+    animation: glow-pink 1.4s ease-in-out infinite;
+}
+
+/* ── Séparateur ───────────────────────────────────────────────────────────── */
+
+#custom-sep {
+    color: rgba(248, 248, 242, 0.12);
+    font-size: 11px;
+    padding: 0 4px;
+    font-weight: normal;
+}
+
+/* ── Base commune modules ─────────────────────────────────────────────────── */
+
+#cpu,
+#temperature,
+#custom-gpu,
+#memory,
+#disk,
+#custom-network,
+#clock,
+#custom-date,
+#mpris,
+#custom-cava,
+#wireplumber,
+#backlight,
+#bluetooth,
+#idle-inhibitor,
+#battery,
+#custom-power-profile,
+#custom-uptime,
+#tray {
+    padding: 0 8px;
+    color: #f8f8f2;
+    background-color: transparent;
+}
+
+/* ── CPU ──────────────────────────────────────────────────────────────────── */
+
+#cpu {
+    color: #8be9fd;
+}
+
+#cpu.warning {
+    color: #f9e2af;
+}
+
+#cpu.critical {
+    color: #f38ba8;
+    animation: pulse-critical 0.8s linear infinite;
+}
+
+/* ── Température ──────────────────────────────────────────────────────────── */
+
+#temperature {
+    color: rgba(139, 233, 253, 0.60);
+    font-size: 11px;
+    font-weight: normal;
+    padding-left: 2px;
+    padding-right: 10px;
+}
+
+#temperature.critical {
+    color: #f38ba8;
+    font-weight: bold;
+    animation: pulse-critical 0.8s linear infinite;
+}
+
+/* ── GPU ──────────────────────────────────────────────────────────────────── */
+
+#custom-gpu {
+    color: #ff79c6;
+}
+
+#custom-gpu.warning {
+    color: #f9e2af;
+}
+
+#custom-gpu.critical {
+    color: #f38ba8;
+    animation: pulse-critical 0.8s linear infinite;
+}
+
+/* ── RAM ──────────────────────────────────────────────────────────────────── */
+
+#memory {
+    color: #ff79c6;
+}
+
+#memory.warning {
+    color: #f9e2af;
+}
+
+#memory.critical {
+    color: #f38ba8;
+    animation: pulse-critical 0.8s linear infinite;
+}
+
+/* ── Disque ───────────────────────────────────────────────────────────────── */
+
+#disk {
+    color: rgba(255, 121, 198, 0.70);
+    font-size: 11px;
+    font-weight: normal;
+}
+
+/* ── Réseau ───────────────────────────────────────────────────────────────── */
+
+#custom-network {
+    color: #8be9fd;
+    font-size: 11px;
+    font-weight: normal;
+    padding-right: 14px;
+}
+
+#custom-network.disconnected {
+    color: #f38ba8;
+}
+
+#custom-network.eth {
+    color: #8be9fd;
+}
+
+#custom-network.wifi {
+    color: rgba(139, 233, 253, 0.80);
+}
+
+/* ── CAVA ─────────────────────────────────────────────────────────────────── */
+
+#custom-cava {
+    color: rgba(231, 156, 254, 0.65);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 0 10px;
+    font-weight: normal;
+}
+
+/* ── Horloge ──────────────────────────────────────────────────────────────── */
+
+#clock {
+    color: #ff79c6;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    padding: 0 10px;
+}
+
+#clock:hover {
+    color: #e79cfe;
+}
+
+/* ── Date ─────────────────────────────────────────────────────────────────── */
+
+#custom-date {
+    color: #8be9fd;
+    font-size: 12px;
+    font-weight: normal;
+    padding: 0 10px 0 2px;
+    letter-spacing: 0.03em;
+}
+
+/* ── MPRIS ────────────────────────────────────────────────────────────────── */
+
+#mpris {
+    color: #e79cfe;
+    font-size: 12px;
+    font-weight: normal;
+    padding: 0 10px;
+}
+
+#mpris.paused {
+    color: rgba(231, 156, 254, 0.50);
+    font-style: italic;
+}
+
+/* ── Volume (wireplumber) ─────────────────────────────────────────────────── */
+
+#wireplumber {
+    color: #ff79c6;
+}
+
+#wireplumber.muted {
+    color: rgba(255, 121, 198, 0.30);
+}
+
+/* ── Luminosité ───────────────────────────────────────────────────────────── */
+
+#backlight {
+    color: #8be9fd;
+}
+
+/* ── Bluetooth ────────────────────────────────────────────────────────────── */
+
+#bluetooth {
+    color: rgba(139, 233, 253, 0.45);
+    font-size: 15px;
+}
+
+#bluetooth.connected {
+    color: #e79cfe;
+}
+
+#bluetooth.disabled {
+    color: rgba(108, 112, 134, 0.50);
+}
+
+/* ── Idle inhibitor ───────────────────────────────────────────────────────── */
+
+#idle-inhibitor {
+    color: rgba(248, 248, 242, 0.35);
+    font-size: 14px;
+}
+
+#idle-inhibitor.activated {
+    color: #f9e2af;
+    animation: pulse-warning 1.6s ease-in-out infinite;
+}
+
+/* ── Batterie ─────────────────────────────────────────────────────────────── */
+
+#battery {
+    color: #ff79c6;
+}
+
+#battery.charging,
+#battery.plugged {
+    color: #a6e3a1;
+}
+
+#battery.full {
+    color: rgba(166, 227, 161, 0.65);
+}
+
+#battery.warning:not(.charging):not(.plugged) {
+    color: #f9e2af;
+}
+
+#battery.critical:not(.charging):not(.plugged) {
+    color: #f38ba8;
+    animation: pulse-critical 0.6s linear infinite;
+}
+
+/* ── Profil énergie ───────────────────────────────────────────────────────── */
+
+#custom-power-profile {
+    color: #8be9fd;
+    font-size: 15px;
+    padding: 0 6px;
+}
+
+#custom-power-profile.performance {
+    color: #f38ba8;
+}
+
+#custom-power-profile.balanced {
+    color: #8be9fd;
+}
+
+#custom-power-profile.low-power {
+    color: #a6e3a1;
+}
+
+/* ── Uptime ───────────────────────────────────────────────────────────────── */
+
+#custom-uptime {
+    color: rgba(139, 233, 253, 0.45);
+    font-size: 11px;
+    font-weight: normal;
+}
+
+/* ── Tray ─────────────────────────────────────────────────────────────────── */
+
+#tray {
+    padding: 0 8px;
+}
+
+/* ── Power ────────────────────────────────────────────────────────────────── */
+
+#custom-power {
+    color: #f38ba8;
+    font-size: 15px;
+    padding: 0 14px 0 8px;
+    border-radius: 0 14px 14px 0;
+}
+
+#custom-power:hover {
+    color: #ff79c6;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: rgba(255, 121, 198, 0.12);
+    border-radius: 6px;
+}
+
+/* ── Tooltip ──────────────────────────────────────────────────────────────── */
+
+tooltip {
+    background-color: rgba(38, 21, 55, 0.96);
+    border: 1px solid rgba(255, 121, 198, 0.30);
+    border-radius: 10px;
+    color: #f8f8f2;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.40);
+}
+
+tooltip label {
+    color: #f8f8f2;
+    padding: 3px;
+}
+
+/* ── Hover global ─────────────────────────────────────────────────────────── */
+
+#cpu:hover,
+#memory:hover,
+#disk:hover,
+#custom-network:hover,
+#wireplumber:hover,
+#backlight:hover,
+#battery:hover,
+#custom-power-profile:hover,
+#custom-uptime:hover {
+    color: #e79cfe;
+}
+
+#bluetooth:hover {
+    color: #e79cfe;
+}

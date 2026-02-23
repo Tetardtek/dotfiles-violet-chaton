@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=WOB
+Comment=Wayland overlay bar (volume / luminosité)
+Type=Application
+Exec=/home/tetardtek/.config/waybar/scripts/wob-start.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true

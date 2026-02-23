@@ -11,7 +11,14 @@ deploy_file() {
     local src="$1"
     local dst="$2"
     ensure_dir "$(dirname "$dst")"
-    if [ -f "$dst" ]; then
+    if [ -L "$dst" ]; then
+        # Symlink géré par COSMIC : sauvegarder la cible réelle puis supprimer le lien
+        local real; real=$(readlink -f "$dst")
+        local rel="${dst#"$HOME/"}"
+        ensure_dir "$BACKUP_DIR/$(dirname "$rel")"
+        cp "$real" "$BACKUP_DIR/$rel" 2>/dev/null
+        rm "$dst"
+    elif [ -f "$dst" ]; then
         local rel="${dst#"$HOME/"}"
         ensure_dir "$BACKUP_DIR/$(dirname "$rel")"
         cp "$dst" "$BACKUP_DIR/$rel" 2>/dev/null
@@ -82,6 +89,24 @@ else
     fail "CosmicTheme.Dark"
 fi
 
+step "COSMIC Theme Light..."
+backup_dir "$COSMIC_DST/com.system76.CosmicTheme.Light/v1"
+ensure_dir "$COSMIC_DST/com.system76.CosmicTheme.Light/v1"
+if cp "$COSMIC_SRC/com.system76.CosmicTheme.Light/v1/"* "$COSMIC_DST/com.system76.CosmicTheme.Light/v1/" 2>/dev/null; then
+    ok "CosmicTheme.Light"
+else
+    fail "CosmicTheme.Light"
+fi
+
+step "COSMIC AppList (favoris dock — pas d'apps en cours)..."
+backup_dir "$COSMIC_DST/com.system76.CosmicAppList/v1"
+ensure_dir "$COSMIC_DST/com.system76.CosmicAppList/v1"
+if cp "$COSMIC_SRC/com.system76.CosmicAppList/v1/"* "$COSMIC_DST/com.system76.CosmicAppList/v1/" 2>/dev/null; then
+    ok "CosmicAppList (filter_top_levels)"
+else
+    fail "CosmicAppList"
+fi
+
 step "COSMIC Theme Mode (dark)..."
 backup_dir "$COSMIC_DST/com.system76.CosmicTheme.Mode/v1"
 ensure_dir "$COSMIC_DST/com.system76.CosmicTheme.Mode/v1"
@@ -100,10 +125,26 @@ else
     fail "CosmicTerm"
 fi
 
-# ── GTK3 — thème violet-chaton ─────────────────────────────────────────────
-section "GTK3 — thème violet-chaton"
+# ── GTK3 / GTK4 — thème violet-chaton ─────────────────────────────────────
+section "GTK — thème violet-chaton"
+
+step "Thème GTK3 (adw-gtk3-dark + couleurs violet-chaton)..."
 ensure_dir "$HOME/.config/gtk-3.0"
 deploy_file "$THEMES/violet-chaton-gtk.css" "$HOME/.config/gtk-3.0/gtk.css"
+
+step "Thème GTK4 / libadwaita (couleurs violet-chaton)..."
+ensure_dir "$HOME/.config/gtk-4.0"
+deploy_file "$THEMES/violet-chaton-gtk.css" "$HOME/.config/gtk-4.0/gtk.css"
+
+step "Activation adw-gtk3-dark + dark mode (gsettings)..."
+if has_cmd gsettings; then
+    gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark' 2>/dev/null && \
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null && \
+        ok "gtk-theme=adw-gtk3-dark, color-scheme=prefer-dark" || \
+        warn "gsettings GTK échoué — thème à appliquer manuellement"
+else
+    warn "gsettings non disponible — thème GTK à appliquer manuellement"
+fi
 
 # ── Nemo — gestionnaire de fichiers ────────────────────────────────────────
 section "Nemo — configuration et thème"
@@ -203,6 +244,105 @@ PYEOF
     else
         fail "Vivaldi injection échouée"
     fi
+fi
+
+# ── Waybar ─────────────────────────────────────────────────────────────────────
+section "Waybar — island floating 3 pills"
+deploy_file "$CONFIGS/waybar/config"       "$HOME/.config/waybar/config"
+deploy_file "$THEMES/violet-chaton-waybar.css" "$HOME/.config/waybar/style.css"
+deploy_file "$CONFIGS/waybar/cava-waybar.cfg"  "$HOME/.config/waybar/cava-waybar.cfg"
+
+step "Scripts waybar..."
+ensure_dir "$HOME/.config/waybar/scripts"
+for script in "$CONFIGS/waybar/scripts/"*.sh; do
+    dst="$HOME/.config/waybar/scripts/$(basename "$script")"
+    cp "$script" "$dst" && chmod +x "$dst"
+done
+for script in "$CONFIGS/waybar/scripts/"*.py; do
+    dst="$HOME/.config/waybar/scripts/$(basename "$script")"
+    cp "$script" "$dst" && chmod +x "$dst"
+done
+ok "Scripts waybar"
+
+# ── Autostart ───────────────────────────────────────────────────────────────────
+section "Autostart — waybar + wob"
+ensure_dir "$HOME/.config/autostart"
+deploy_file "$CONFIGS/autostart/waybar.desktop" "$HOME/.config/autostart/waybar.desktop"
+deploy_file "$CONFIGS/autostart/wob.desktop"    "$HOME/.config/autostart/wob.desktop"
+
+# ── Règle sudoers — profil énergie ──────────────────────────────────────────────
+section "Sudoers — profil énergie ACPI"
+SUDOERS_FILE="/etc/sudoers.d/waybar-power-profile"
+SUDOERS_RULE="$USER ALL=(ALL) NOPASSWD: /usr/bin/tee /sys/firmware/acpi/platform_profile"
+if [ -f "$SUDOERS_FILE" ]; then
+    ok "Règle sudoers déjà présente"
+else
+    step "Création de la règle sudoers (mot de passe sudo requis)..."
+    echo "$SUDOERS_RULE" > /tmp/waybar-pp-sudoers
+    if sudo cp /tmp/waybar-pp-sudoers "$SUDOERS_FILE" && sudo chmod 440 "$SUDOERS_FILE"; then
+        rm -f /tmp/waybar-pp-sudoers
+        ok "Règle sudoers créée"
+    else
+        rm -f /tmp/waybar-pp-sudoers
+        warn "Échec sudoers — changement de profil énergie nécessitera sudo"
+    fi
+fi
+
+# ── Règle udev — permissions platform_profile ────────────────────────────────
+section "udev — platform_profile accessible au groupe video"
+UDEV_FILE="/etc/udev/rules.d/90-platform-profile.rules"
+if [ -f "$UDEV_FILE" ]; then
+    ok "Règle udev déjà présente"
+else
+    step "Création de la règle udev (mot de passe sudo requis)..."
+    echo 'ACTION=="add|change", KERNEL=="platform_profile", SUBSYSTEM=="acpi", RUN+="/bin/chmod g+w /sys/firmware/acpi/platform_profile", RUN+="/bin/chgrp video /sys/firmware/acpi/platform_profile"' \
+        > /tmp/90-platform-profile.rules
+    if sudo cp /tmp/90-platform-profile.rules "$UDEV_FILE" && sudo chmod 644 "$UDEV_FILE"; then
+        rm -f /tmp/90-platform-profile.rules
+        sudo chmod g+w /sys/firmware/acpi/platform_profile 2>/dev/null
+        sudo chgrp video /sys/firmware/acpi/platform_profile 2>/dev/null
+        ok "Règle udev créée"
+    else
+        rm -f /tmp/90-platform-profile.rules
+        warn "Échec udev — redémarrage requis pour les permissions platform_profile"
+    fi
+fi
+
+# ── Wofi — launcher + power menu ────────────────────────────────────────────────
+section "Wofi — launcher violet-chaton"
+ensure_dir "$HOME/.config/wofi"
+deploy_file "$CONFIGS/wofi/config"                    "$HOME/.config/wofi/config"
+deploy_file "$THEMES/violet-chaton-wofi.css"          "$HOME/.config/wofi/style.css"
+deploy_file "$THEMES/violet-chaton-wofi-power.css"    "$HOME/.config/wofi/power-style.css"
+
+# ── Rofi ────────────────────────────────────────────────────────────────────────
+section "Rofi — thème violet-chaton"
+ensure_dir "$HOME/.config/rofi"
+deploy_file "$CONFIGS/rofi/config.rasi"          "$HOME/.config/rofi/config.rasi"
+deploy_file "$THEMES/violet-chaton-rofi.rasi"    "$HOME/.config/rofi/violet-chaton.rasi"
+
+# ── wob ─────────────────────────────────────────────────────────────────────────
+section "wob — overlay volume/luminosité"
+deploy_file "$CONFIGS/wob/wob.ini" "$HOME/.config/wob.ini"
+
+# ── Désactiver cosmic-osd (remplacé par wob) ─────────────────────────────────
+section "cosmic-osd — désactivation (wob le remplace)"
+if [ -f /usr/bin/cosmic-osd.real ]; then
+    ok "cosmic-osd déjà désactivé via dpkg-divert"
+elif [ -f /usr/bin/cosmic-osd ]; then
+    step "Divert de cosmic-osd (mot de passe sudo requis)..."
+    if sudo dpkg-divert --add --rename --divert /usr/bin/cosmic-osd.real /usr/bin/cosmic-osd; then
+        printf '#!/usr/bin/env bash\nexec sleep infinity\n' > /tmp/cosmic-osd-fake
+        chmod +x /tmp/cosmic-osd-fake
+        sudo cp /tmp/cosmic-osd-fake /usr/bin/cosmic-osd
+        rm -f /tmp/cosmic-osd-fake
+        pkill -x cosmic-osd 2>/dev/null
+        ok "cosmic-osd désactivé — wob gère les overlays"
+    else
+        warn "dpkg-divert échoué — cosmic-osd reste actif"
+    fi
+else
+    warn "cosmic-osd introuvable — rien à faire"
 fi
 
 # ── Logo fastfetch ─────────────────────────────────────────────────────────────

@@ -1,247 +1,122 @@
-/* ── violet-chaton GTK3 theme — Nemo & GTK apps ───────────────────────────────
+/* ── violet-chaton GTK theme (adw-gtk3-dark compatible) ────────────────────
  *
- *  Couleurs extraites du thème COSMIC violet-chaton :
- *  bg        #341C4A  background.base
- *  surface   #493161  background.component.base
- *  hover     #5B4671  background.component.hover
- *  accent    #E79CFE  accent.base
- *  text      #FCFCF6  background.on
- *  muted     #7F849C  neutral_7
- *  border    #5C496C  background.divider
- *  sidebar   #2B1540  (bg légèrement plus sombre)
+ *  Contenu identique au dark.css généré par COSMIC pour le thème violet-chaton.
+ *  adw-gtk3-dark et libadwaita lisent ces variables @define-color.
+ *  Sur le PC principal, COSMIC gère ce fichier via symlink — ce fichier
+ *  sert de fallback lors de la première installation.
  * ─────────────────────────────────────────────────────────────────────────── */
 
-@define-color theme_bg_color          #341C4A;
-@define-color theme_fg_color          #FCFCF6;
-@define-color theme_base_color        #493161;
-@define-color theme_selected_bg_color #E79CFE;
-@define-color theme_selected_fg_color #341C4A;
-@define-color theme_text_color        #FCFCF6;
-@define-color borders                 #5C496C;
+@define-color window_bg_color rgba(52, 28, 74, 1.00);
+@define-color window_fg_color rgba(252, 252, 246, 1.00);
 
-/* ── Fenêtre principale ────────────────────────────────────────────────────── */
-window, .background {
-    background-color: #341C4A;
-    color: #FCFCF6;
-}
+@define-color view_bg_color rgba(56, 35, 75, 1.00);
+@define-color view_fg_color rgba(193, 193, 187, 1.00);
 
-/* ── Barre de titre / headerbar ───────────────────────────────────────────── */
-headerbar, .titlebar {
-    background-color: #493161;
-    color: #FCFCF6;
-    border-bottom: 1px solid #5C496C;
-}
+@define-color headerbar_bg_color rgba(52, 28, 74, 1.00);
+@define-color headerbar_fg_color rgba(252, 252, 246, 1.00);
+@define-color headerbar_border_color_color rgba(92, 73, 108, 1.00);
+@define-color headerbar_backdrop_color rgba(52, 28, 74, 1.00);
 
-headerbar button, .titlebar button {
-    background-color: transparent;
-    color: #FCFCF6;
-    border: none;
-    border-radius: 6px;
-}
+@define-color sidebar_bg_color rgba(56, 35, 75, 1.00);
+@define-color sidebar_fg_color rgba(193, 193, 187, 1.00);
+@define-color sidebar_shade_color rgba(0, 0, 0, 0.08);
+@define-color sidebar_backdrop_color rgba(72, 53, 89, 1.00);
 
-headerbar button:hover, .titlebar button:hover {
-    background-color: #5B4671;
-}
+@define-color secondary_sidebar_bg_color rgba(69, 71, 90, 1.00);
+@define-color secondary_sidebar_fg_color rgba(225, 225, 219, 1.00);
+@define-color secondary_sidebar_shade_color rgba(0, 0, 0, 0.08);
+@define-color secondary_sidebar_backdrop_color rgba(84, 86, 103, 1.00);
 
-headerbar button:active, .titlebar button:active {
-    background-color: #E79CFE;
-    color: #341C4A;
-}
+@define-color card_bg_color rgba(73, 49, 97, 1.00);
+@define-color card_fg_color rgba(212, 212, 206, 1.00);
 
-/* ── Sidebar Nemo (paneau des emplacements) ───────────────────────────────── */
-.sidebar, placessidebar {
-    background-color: #2B1540;
-    color: #FCFCF6;
-    border-right: 1px solid #5C496C;
-}
+@define-color thumbnail_bg_color rgba(73, 49, 97, 1.00);
+@define-color thumbnail_fg_color rgba(212, 212, 206, 1.00);
 
-.sidebar row, placessidebar row {
-    border-radius: 6px;
-    padding: 2px 4px;
-}
+@define-color dialog_bg_color rgba(56, 35, 75, 1.00);
+@define-color dialog_fg_color rgba(193, 193, 187, 1.00);
 
-.sidebar row:hover, placessidebar row:hover {
-    background-color: #5B4671;
-}
+@define-color popover_bg_color rgba(73, 49, 97, 1.00);
+@define-color popover_fg_color rgba(212, 212, 206, 1.00);
 
-.sidebar row:selected, placessidebar row:selected {
-    background-color: #E79CFE;
-    color: #341C4A;
-}
+@define-color shade_color rgba(0, 0, 0, 0.32);
+@define-color scrollbar_outline_color rgba(52, 28, 74, 0.50);
 
-.sidebar .sidebar-section-header, placessidebar .sidebar-section-header {
-    color: #7F849C;
-    font-size: smaller;
-}
+@define-color accent_color rgba(231, 156, 254, 1.00);
+@define-color accent_bg_color rgba(231, 156, 254, 1.00);
+@define-color accent_fg_color rgba(0, 0, 0, 1.00);
 
-/* ── Vue fichiers (icônes + liste) ───────────────────────────────────────── */
-.view, iconview, treeview {
-    background-color: #341C4A;
-    color: #FCFCF6;
-}
+@define-color destructive_color rgba(243, 139, 168, 1.00);
+@define-color destructive_bg_color rgba(243, 139, 168, 1.00);
+@define-color destructive_fg_color rgba(0, 0, 0, 1.00);
 
-.view:selected, iconview:selected,
-treeview:selected, .view:focus:selected {
-    background-color: #E79CFE;
-    color: #341C4A;
-}
+@define-color warning_color rgba(249, 226, 175, 1.00);
+@define-color warning_bg_color rgba(249, 226, 175, 1.00);
+@define-color warning_fg_color rgba(0, 0, 0, 1.00);
 
-/* En-têtes de colonnes (vue liste) */
-treeview header button {
-    background-color: #493161;
-    color: #FCFCF6;
-    border: none;
-    border-right: 1px solid #5C496C;
-    border-bottom: 1px solid #5C496C;
-}
+@define-color success_color rgba(166, 227, 161, 1.00);
+@define-color success_bg_color rgba(166, 227, 161, 1.00);
+@define-color success_fg_color rgba(0, 0, 0, 1.00);
 
-treeview header button:hover {
-    background-color: #5B4671;
-}
+@define-color accent_color rgba(231, 156, 254, 1.00);
+@define-color accent_bg_color rgba(231, 156, 254, 1.00);
+@define-color accent_fg_color rgba(0, 0, 0, 1.00);
 
-/* ── Barre d'outils / pathbar ─────────────────────────────────────────────── */
-toolbar, .path-bar {
-    background-color: #493161;
-    border-bottom: 1px solid #5C496C;
-}
+@define-color error_color rgba(243, 139, 168, 1.00);
+@define-color error_bg_color rgba(243, 139, 168, 1.00);
+@define-color error_fg_color rgba(0, 0, 0, 1.00);
 
-.path-bar button {
-    background-color: transparent;
-    color: #FCFCF6;
-    border: none;
-    border-radius: 6px;
-}
+@define-color blue_1 rgba(151, 195, 255, 1.00);
+@define-color blue_2 rgba(144, 187, 255, 1.00);
+@define-color blue_3 rgba(137, 180, 250, 1.00);
+@define-color blue_4 rgba(114, 156, 224, 1.00);
+@define-color blue_5 rgba(91, 132, 199, 1.00);
 
-.path-bar button:hover {
-    background-color: #5B4671;
-}
+@define-color green_1 rgba(175, 236, 170, 1.00);
+@define-color green_2 rgba(171, 232, 165, 1.00);
+@define-color green_3 rgba(166, 227, 161, 1.00);
+@define-color green_4 rgba(139, 199, 134, 1.00);
+@define-color green_5 rgba(113, 171, 108, 1.00);
 
-.path-bar button:checked {
-    background-color: #5B4671;
-    color: #E79CFE;
-}
+@define-color yellow_1 rgba(254, 231, 180, 1.00);
+@define-color yellow_2 rgba(252, 229, 178, 1.00);
+@define-color yellow_3 rgba(249, 226, 175, 1.00);
+@define-color yellow_4 rgba(219, 196, 146, 1.00);
+@define-color yellow_5 rgba(189, 167, 118, 1.00);
 
-/* ── Barre de recherche / entrée texte ────────────────────────────────────── */
-entry {
-    background-color: #5B4671;
-    color: #FCFCF6;
-    border: 1px solid #5C496C;
-    border-radius: 6px;
-    padding: 4px 8px;
-}
+@define-color red_1 rgba(255, 154, 183, 1.00);
+@define-color red_2 rgba(252, 147, 176, 1.00);
+@define-color red_3 rgba(243, 139, 168, 1.00);
+@define-color red_4 rgba(217, 116, 145, 1.00);
+@define-color red_5 rgba(191, 93, 122, 1.00);
 
-entry:focus {
-    border-color: #E79CFE;
-    box-shadow: 0 0 0 2px alpha(#E79CFE, 0.3);
-}
+@define-color orange_1 rgba(255, 190, 146, 1.00);
+@define-color orange_2 rgba(255, 185, 140, 1.00);
+@define-color orange_3 rgba(250, 179, 135, 1.00);
+@define-color orange_4 rgba(222, 153, 110, 1.00);
+@define-color orange_5 rgba(195, 128, 85, 1.00);
 
-entry placeholder {
-    color: #7F849C;
-}
+@define-color purple_1 rgba(192, 202, 255, 1.00);
+@define-color purple_2 rgba(186, 196, 255, 1.00);
+@define-color purple_3 rgba(180, 190, 254, 1.00);
+@define-color purple_4 rgba(155, 164, 226, 1.00);
+@define-color purple_5 rgba(130, 139, 200, 1.00);
+@define-color light_0 rgba(0, 0, 0, 1.00);
+@define-color light_1 rgba(3, 3, 16, 1.00);
+@define-color light_2 rgba(24, 25, 43, 1.00);
+@define-color light_3 rgba(50, 53, 72, 1.00);
+@define-color light_4 rgba(79, 82, 103, 1.00);
+@define-color dark_0 rgba(110, 114, 135, 1.00);
+@define-color dark_1 rgba(143, 147, 169, 1.00);
+@define-color dark_2 rgba(177, 181, 205, 1.00);
+@define-color dark_3 rgba(213, 217, 241, 1.00);
+@define-color dark_4 rgba(255, 255, 255, 1.00);
 
-/* ── Scrollbar ────────────────────────────────────────────────────────────── */
-scrollbar {
-    background-color: transparent;
-}
-
-scrollbar slider {
-    background-color: #5C496C;
-    border-radius: 10px;
-    min-width: 6px;
-    min-height: 6px;
-}
-
-scrollbar slider:hover {
-    background-color: #E79CFE;
-}
-
-/* ── Menu contextuel ──────────────────────────────────────────────────────── */
-menu, .context-menu, .popup {
-    background-color: #493161;
-    color: #FCFCF6;
-    border: 1px solid #5C496C;
-    border-radius: 8px;
-    padding: 4px;
-}
-
-menuitem {
-    border-radius: 6px;
-    padding: 4px 8px;
-}
-
-menuitem:hover {
-    background-color: #E79CFE;
-    color: #341C4A;
-}
-
-menuitem accelerator {
-    color: #7F849C;
-}
-
-separator, menuitem separator {
-    background-color: #5C496C;
-    min-height: 1px;
-}
-
-/* ── Barre de statut ──────────────────────────────────────────────────────── */
-.statusbar, statusbar {
-    background-color: #493161;
-    color: #7F849C;
-    border-top: 1px solid #5C496C;
-    font-size: smaller;
-}
-
-/* ── Boutons génériques ───────────────────────────────────────────────────── */
-button {
-    background-color: #5B4671;
-    color: #FCFCF6;
-    border: 1px solid #5C496C;
-    border-radius: 6px;
-    padding: 4px 12px;
-}
-
-button:hover {
-    background-color: #E79CFE;
-    color: #341C4A;
-    border-color: #E79CFE;
-}
-
-button.suggested-action {
-    background-color: #E79CFE;
-    color: #341C4A;
-    border-color: #E79CFE;
-}
-
-button.destructive-action {
-    background-color: #F38BA8;
-    color: #341C4A;
-}
-
-/* ── Notebooks / onglets ─────────────────────────────────────────────────── */
-notebook tab {
-    background-color: #493161;
-    color: #7F849C;
-    border-radius: 6px 6px 0 0;
-    padding: 4px 12px;
-}
-
-notebook tab:checked {
-    background-color: #5B4671;
-    color: #FCFCF6;
-}
-
-/* ── Popover ─────────────────────────────────────────────────────────────── */
-popover {
-    background-color: #493161;
-    color: #FCFCF6;
-    border: 1px solid #5C496C;
-    border-radius: 8px;
-}
-
-/* ── Tooltip ─────────────────────────────────────────────────────────────── */
-tooltip {
-    background-color: #5B4671;
-    color: #FCFCF6;
-    border-radius: 6px;
-    padding: 4px 8px;
-}
+/* ── Variables GTK3 classiques (compat apps legacy) ─────────────────────── */
+@define-color theme_bg_color          rgba(52, 28, 74, 1.00);
+@define-color theme_fg_color          rgba(252, 252, 246, 1.00);
+@define-color theme_base_color        rgba(73, 49, 97, 1.00);
+@define-color theme_selected_bg_color rgba(231, 156, 254, 1.00);
+@define-color theme_selected_fg_color rgba(52, 28, 74, 1.00);
+@define-color theme_text_color        rgba(252, 252, 246, 1.00);
+@define-color borders                 rgba(92, 73, 108, 1.00);

@@ -1,0 +1,64 @@
+/* ── violet-chaton wofi theme ─────────────────────────────────────────────── */
+
+window {
+    background-color: rgba(52, 28, 74, 0.88);
+    border:           2px solid rgba(255, 121, 198, 0.28);
+    border-radius:    14px;
+    font-family:      "JetBrainsMono Nerd Font";
+    font-size:        13px;
+    font-weight:      bold;
+}
+
+/* ── Barre de recherche ──────────────────────────────────────────────────── */
+
+#input {
+    all:              unset;
+    background-color: rgba(38, 21, 55, 0.60);
+    color:            #f8f8f2;
+    border-bottom:    1px solid rgba(92, 73, 108, 0.50);
+    border-radius:    12px 12px 0 0;
+    padding:          10px 14px;
+    margin:           0;
+    font-family:      "JetBrainsMono Nerd Font";
+    font-size:        13px;
+    font-weight:      bold;
+    caret-color:      #ff79c6;
+}
+
+/* ── Conteneurs ──────────────────────────────────────────────────────────── */
+
+#outer-box {
+    padding:          0;
+    border-radius:    14px;
+}
+
+#scroll {
+    margin:           4px 0;
+}
+
+#inner-box {
+    padding:          4px 6px;
+}
+
+/* ── Entrées ─────────────────────────────────────────────────────────────── */
+
+#entry {
+    border-radius:    8px;
+    padding:          7px 10px;
+    margin:           1px 0;
+    border:           1px solid transparent;
+}
+
+#entry:selected {
+    background-color: rgba(255, 121, 198, 0.16);
+    border-color:     rgba(255, 121, 198, 0.32);
+}
+
+#text {
+    color:            #f8f8f2;
+    font-family:      "JetBrainsMono Nerd Font";
+}
+
+#text:selected {
+    color:            #ff79c6;
+}

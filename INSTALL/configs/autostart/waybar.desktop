@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Waybar
+Comment=violet-chaton status bar
+Type=Application
+Exec=waybar
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true

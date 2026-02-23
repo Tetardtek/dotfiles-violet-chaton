@@ -19,6 +19,7 @@ PACKAGES=(
     chafa
     jq
     libgtk-3-bin
+    adw-gtk3
     nemo
     nemo-fileroller
     # fastfetch → installé via .deb GitHub (voir 02-packages-manual.sh)
@@ -26,6 +27,16 @@ PACKAGES=(
     btop
     # atuin  → installé via son propre script (voir 02-packages-manual.sh)
     # starship → installé via son propre script (voir 02-packages-manual.sh)
+    # ── Waybar + launcher + dépendances ──────────────────────────────────────
+    waybar
+    wob
+    wofi
+    brightnessctl
+    playerctl
+    wireplumber
+    python3-gi
+    gir1.2-gtk-3.0
+    gir1.2-gtklayershell-0.1
     # ── Fun & utils ──────────────────────────────────────────────────────────
     cmatrix
     toilet
