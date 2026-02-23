@@ -337,11 +337,16 @@ class MediaPopup(Gtk.Window):
         self.grab_focus()
 
     def _redraw_scales(self):
-        """Force GTK3 à recalculer les positions highlight après réalisation."""
+        """Force GTK3 à recalculer les highlights.
+        set_value(même_valeur) est un no-op — on oscille ±1 pour déclencher
+        un vrai recalcul de la position du highlight dans le trough."""
         self._blk = True
-        self.sink_scale.set_value(self.sink_scale.get_value())
-        self.src_scale.set_value(self.src_scale.get_value())
-        self.bright_scale.set_value(self.bright_scale.get_value())
+        for scale in [self.sink_scale, self.src_scale, self.bright_scale]:
+            v   = scale.get_value()
+            adj = scale.get_adjustment()
+            lo  = adj.get_lower()
+            scale.set_value(max(lo, v - 1))  # valeur différente → GTK recalcule
+            scale.set_value(v)               # retour à la valeur réelle
         self._blk = False
         return False
 
