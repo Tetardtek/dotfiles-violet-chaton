@@ -276,6 +276,13 @@ else
     fi
 fi
 
+# ── Wofi — launcher + power menu ────────────────────────────────────────────────
+section "Wofi — launcher violet-chaton"
+ensure_dir "$HOME/.config/wofi"
+deploy_file "$CONFIGS/wofi/config"                    "$HOME/.config/wofi/config"
+deploy_file "$THEMES/violet-chaton-wofi.css"          "$HOME/.config/wofi/style.css"
+deploy_file "$THEMES/violet-chaton-wofi-power.css"    "$HOME/.config/wofi/power-style.css"
+
 # ── Rofi ────────────────────────────────────────────────────────────────────────
 section "Rofi — thème violet-chaton"
 ensure_dir "$HOME/.config/rofi"

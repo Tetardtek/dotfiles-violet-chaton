@@ -26,9 +26,10 @@ PACKAGES=(
     btop
     # atuin  → installé via son propre script (voir 02-packages-manual.sh)
     # starship → installé via son propre script (voir 02-packages-manual.sh)
-    # ── Waybar + dépendances ─────────────────────────────────────────────────
+    # ── Waybar + launcher + dépendances ──────────────────────────────────────
     waybar
     wob
+    wofi
     brightnessctl
     playerctl
     wireplumber
