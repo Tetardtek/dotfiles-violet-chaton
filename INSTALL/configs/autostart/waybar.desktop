@@ -2,7 +2,7 @@
 Name=Waybar
 Comment=violet-chaton status bar
 Type=Application
-Exec=waybar
+Exec=bash -c "exec 9>/tmp/waybar-start.lock; flock -n 9 || exit 0; exec waybar"
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true
