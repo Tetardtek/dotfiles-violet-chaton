@@ -105,13 +105,14 @@ scale.audio trough {
     border: none;
 }
 
-scale.audio highlight {
+scale.audio trough highlight {
     background-color: #ff79c6;
+    min-height: 6px;
     border-radius: 3px;
     border: none;
 }
 
-scale.audio.muted highlight {
+scale.audio.muted trough highlight {
     background-color: rgba(108, 112, 134, 0.40);
 }
 
@@ -147,8 +148,9 @@ scale.bright trough {
     border: none;
 }
 
-scale.bright highlight {
+scale.bright trough highlight {
     background-color: #8be9fd;
+    min-height: 6px;
     border-radius: 3px;
     border: none;
 }
