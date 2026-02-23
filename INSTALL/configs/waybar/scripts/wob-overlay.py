@@ -197,10 +197,7 @@ def _fifo_reader(overlay):
         try:
             if not os.path.exists(FIFO):
                 os.mkfifo(FIFO)
-            # O_RDWR : ne bloque pas à l'ouverture ET garde le FIFO ouvert
-            # entre deux écritures (pas d'EOF même sans writer actif)
-            fd = os.open(FIFO, os.O_RDWR)
-            with os.fdopen(fd, 'r') as f:
+            with open(FIFO, 'r') as f:
                 for line in f:
                     line = line.strip()
                     if not line:
