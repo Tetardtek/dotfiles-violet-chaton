@@ -22,7 +22,7 @@ case "$1" in
         ;;
 esac
 
-# Feedback wob si le daemon tourne
-if [[ -p "$FIFO" ]] && pgrep -x wob >/dev/null 2>&1; then
-    echo "$(get_vol)" > "$FIFO"
+# Feedback overlay
+if [[ -p "$FIFO" ]]; then
+    echo "v:$(get_vol)" > "$FIFO"
 fi

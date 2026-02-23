@@ -28,9 +28,9 @@ if [[ "$1" == "--toggle" ]]; then
     BRIGHT=$(_bright_for "$NEXT")
     brightnessctl set "${BRIGHT}%" -q
 
-    # Feedback wob
+    # Feedback overlay
     if [[ -p /tmp/wob.fifo ]]; then
-        echo "$BRIGHT" > /tmp/wob.fifo 2>/dev/null || true
+        echo "b:${BRIGHT}" > /tmp/wob.fifo 2>/dev/null || true
     fi
 
     # Rafraîchir le module waybar

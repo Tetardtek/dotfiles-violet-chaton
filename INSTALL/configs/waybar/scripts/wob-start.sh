@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-# wob-start.sh — lance le daemon wob via FIFO
+# wob-start.sh — lance l'overlay violet-chaton via FIFO
 # Appelé au démarrage de session (autostart)
 
 FIFO="/tmp/wob.fifo"
 
-pkill wob 2>/dev/null
+pkill -f wob-overlay.py 2>/dev/null
 rm -f "$FIFO"
 mkfifo "$FIFO"
 
 # Ouvrir le FIFO en lecture+écriture sur fd3 :
-# - empêche wob de recevoir EOF entre deux écritures
-# - wob hérite du fd et reste vivant même après la fin de ce script
+# empêche l'overlay de recevoir EOF entre deux écritures
 exec 3<> "$FIFO"
-wob --config "$HOME/.config/wob.ini" <&3 &
+python3 "$HOME/.config/waybar/scripts/wob-overlay.py" &
 disown $!

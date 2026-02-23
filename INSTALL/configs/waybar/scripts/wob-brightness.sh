@@ -10,8 +10,8 @@ case "$1" in
     down) brightnessctl set "${STEP}%-" -q ;;
 esac
 
-# Feedback wob si le daemon tourne
-if [[ -p "$FIFO" ]] && pgrep -x wob >/dev/null 2>&1; then
+# Feedback overlay
+if [[ -p "$FIFO" ]]; then
     BRIGHT=$(brightnessctl -m 2>/dev/null | awk -F, '{gsub(/%/,"",$4); print int($4)}')
-    echo "$BRIGHT" > "$FIFO"
+    echo "b:${BRIGHT}" > "$FIFO"
 fi

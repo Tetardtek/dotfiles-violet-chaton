@@ -197,7 +197,7 @@ def get_node_name(target):
 
 def set_sink_vol(v):
     run(['wpctl', 'set-volume', '-l', '1.0', '@DEFAULT_AUDIO_SINK@', f'{v}%'])
-    _wob(v)
+    _wob(f'v:{v}')
 
 def set_source_vol(v):
     run(['wpctl', 'set-volume', '@DEFAULT_AUDIO_SOURCE@', f'{v}%'])
@@ -216,14 +216,14 @@ def get_brightness():
 def set_brightness(v):
     v = max(1, v)
     run(['brightnessctl', 'set', f'{v}%', '-q'])
-    _wob(v)
+    _wob(f'b:{v}')
 
-def _wob(v):
+def _wob(msg):
     fifo = '/tmp/wob.fifo'
     if os.path.exists(fifo):
         try:
             fd = os.open(fifo, os.O_WRONLY | os.O_NONBLOCK)
-            os.write(fd, f'{v}\n'.encode())
+            os.write(fd, f'{msg}\n'.encode())
             os.close(fd)
         except OSError:
             pass
