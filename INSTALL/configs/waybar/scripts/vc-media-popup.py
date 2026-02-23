@@ -135,6 +135,31 @@ scale.audio.muted slider {
     border-color: rgba(108, 112, 134, 0.60);
 }
 
+/* ── Sélecteur de périphérique de sortie ────────────────────────────────────── */
+
+#device-btn {
+    background-color: transparent;
+    color: rgba(248, 248, 242, 0.65);
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 11px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 5px 10px;
+    min-width: 0;
+}
+
+#device-btn:hover {
+    background-color: rgba(91, 70, 113, 0.55);
+    color: #f8f8f2;
+    border-color: rgba(92, 73, 108, 0.60);
+}
+
+#device-btn.active {
+    background-color: rgba(255, 121, 198, 0.14);
+    color: #ff79c6;
+    border-color: rgba(255, 121, 198, 0.55);
+}
+
 /* ── Slider luminosité (cyan) ───────────────────────────────────────────────── */
 
 scale.bright {
@@ -182,8 +207,9 @@ POPUP_WIDTH = 310
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def run(cmd, **kw):
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=2, **kw)
+def run(cmd, env=None, **kw):
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=2,
+                          env=env, **kw)
 
 def get_sink_volume():
     r = run(['wpctl', 'get-volume', '@DEFAULT_AUDIO_SINK@'])
@@ -239,6 +265,71 @@ def _wob(msg):
         except OSError:
             pass
 
+def get_sinks():
+    """Retourne [(sink_name, description, is_default)] — exclut SUSPENDED."""
+    env = {**os.environ, 'LANG': 'C', 'LC_ALL': 'C'}
+    r_default = run(['pactl', 'get-default-sink'], env=env)
+    default_name = r_default.stdout.strip()
+
+    r_full = run(['pactl', 'list', 'sinks'], env=env)
+    sinks, state, name, desc = [], None, None, None
+    for line in r_full.stdout.splitlines():
+        st = re.search(r'^\s+State:\s+(\S+)', line)
+        nm = re.search(r'^\s+Name:\s+(.+)$', line)
+        ds = re.search(r'^\s+Description:\s+(.+)$', line)
+        if st: state = st.group(1)
+        elif nm: name = nm.group(1).strip()
+        elif ds and name:
+            desc = ds.group(1).strip()
+            if state != 'SUSPENDED':
+                sinks.append((name, desc, name == default_name))
+            state, name, desc = None, None, None
+    return sinks
+
+def set_default_sink(name):
+    run(['pactl', 'set-default-sink', name])
+
+def get_sources():
+    """Retourne [(source_name, description, is_default)] — exclut les .monitor."""
+    env = {**os.environ, 'LANG': 'C', 'LC_ALL': 'C'}
+    r_default = run(['pactl', 'get-default-source'], env=env)
+    default_name = r_default.stdout.strip()
+
+    r_full = run(['pactl', 'list', 'sources'], env=env)
+    sources, name, desc = [], None, None
+    for line in r_full.stdout.splitlines():
+        nm = re.search(r'^\s+Name:\s+(.+)$', line)
+        ds = re.search(r'^\s+Description:\s+(.+)$', line)
+        if nm:
+            name = nm.group(1).strip()
+        elif ds and name:
+            desc = ds.group(1).strip()
+            if '.monitor' not in name:
+                sources.append((name, desc, name == default_name))
+            name, desc = None, None
+    return sources
+
+def set_default_source(name):
+    run(['pactl', 'set-default-source', name])
+
+def source_icon(name, desc):
+    s = (name + desc).lower()
+    if 'bluetooth' in s or 'bluez' in s: return '󰥰'
+    if 'usb' in s:                        return '󱡬'
+    if 'headset' in s or 'headphone' in s: return '󰋎'
+    return '󰍬'
+
+def sink_icon(name, desc):
+    s = (name + desc).lower()
+    if 'hdmi' in s or 'dp-' in s or 'displayport' in s: return '󰡁'
+    if 'bluetooth' in s or 'bluez' in s:                 return '󰥰'
+    if 'usb' in s:                                        return '󱡬'
+    if 'headphone' in s or 'headset' in s:               return '󰋋'
+    return '󰓃'
+
+def short_desc(desc, maxlen=16):
+    return desc if len(desc) <= maxlen else desc[:maxlen - 1] + '…'
+
 def vol_icon(muted):
     return '󰖁' if muted else '󰕾'
 
@@ -257,19 +348,13 @@ class MediaPopup(Gtk.Window):
         super().__init__()
         self._blk = False
 
-        # ── Position ─────────────────────────────────────────────────────────
-        display = Gdk.Display.get_default()
-        monitor = display.get_primary_monitor() if display else None
-        screen_w = monitor.get_geometry().width if monitor else 1920
-        module_center = screen_w - 16 - 210
-        margin_left = max(0, module_center - POPUP_WIDTH // 2)
-
+        # ── Position — ancré à droite, toujours dans l'écran ─────────────────
         GtkLayerShell.init_for_window(self)
         GtkLayerShell.set_layer(self, GtkLayerShell.Layer.OVERLAY)
         GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
-        GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
+        GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, 66)
-        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, margin_left)
+        GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 12)
         GtkLayerShell.set_keyboard_mode(self, GtkLayerShell.KeyboardMode.ON_DEMAND)
         GtkLayerShell.set_exclusive_zone(self, -1)
         self.set_decorated(False)
@@ -296,9 +381,13 @@ class MediaPopup(Gtk.Window):
         self.add(box)
 
         # ╔═══ SORTIE ══════════════════════════════════════════════════════════╗
+        sinks = get_sinks()
         box.pack_start(self._section_header('SORTIE', '󰕾'), False, False, 0)
-        box.pack_start(self._device_label(
-            get_node_name('@DEFAULT_AUDIO_SINK@')), False, False, 2)
+        self.sink_device_lbl = self._device_label(
+            get_node_name('@DEFAULT_AUDIO_SINK@'))
+        box.pack_start(self.sink_device_lbl, False, False, 2)
+        if len(sinks) > 1:
+            box.pack_start(self._sink_selector(sinks), False, False, 4)
         sink_row, self.sink_scale, self.sink_pct, self.sink_icon = \
             self._slider_row(sink_vol, sink_muted, 'audio', vol_icon(sink_muted),
                              self._toggle_sink_mute, '@DEFAULT_AUDIO_SINK@')
@@ -309,9 +398,13 @@ class MediaPopup(Gtk.Window):
         sep1.set_name('separator')
         box.pack_start(sep1, False, False, 0)
 
+        sources = get_sources()
         box.pack_start(self._section_header('ENTRÉE', '󰍬'), False, False, 0)
-        box.pack_start(self._device_label(
-            get_node_name('@DEFAULT_AUDIO_SOURCE@')), False, False, 2)
+        self.src_device_lbl = self._device_label(
+            get_node_name('@DEFAULT_AUDIO_SOURCE@'))
+        box.pack_start(self.src_device_lbl, False, False, 2)
+        if len(sources) > 1:
+            box.pack_start(self._source_selector(sources), False, False, 4)
         src_row, self.src_scale, self.src_pct, self.src_icon = \
             self._slider_row(src_vol, src_muted, 'audio', mic_icon(src_muted),
                              self._toggle_src_mute, '@DEFAULT_AUDIO_SOURCE@')
@@ -350,6 +443,93 @@ class MediaPopup(Gtk.Window):
             scale.set_value(v)               # retour à la valeur réelle
         self._blk = False
         return False
+
+    # ── Sélecteur de sortie ────────────────────────────────────────────────────
+
+    def _sink_selector(self, sinks):
+        self._sink_btns  = {}   # name → button
+        self._sink_descs = {}   # name → desc
+        col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        for name, desc, is_default in sinks:
+            self._sink_descs[name] = desc
+            btn = Gtk.Button()
+            btn.set_name('device-btn')
+            btn.set_hexpand(True)
+            lbl = Gtk.Label(label=self._sink_label(name, desc, is_default))
+            lbl.set_halign(Gtk.Align.START)
+            btn.add(lbl)
+            if is_default:
+                btn.get_style_context().add_class('active')
+            btn.connect('clicked', self._on_sink_selected, name)
+            col.pack_start(btn, False, True, 0)
+            self._sink_btns[name] = btn
+        return col
+
+    def _sink_label(self, name, desc, active):
+        check = '  ' if active else ''
+        return f'{sink_icon(name, desc)}  {desc}{check}'
+
+    def _source_selector(self, sources):
+        self._src_btns  = {}
+        self._src_descs = {}
+        col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        for name, desc, is_default in sources:
+            self._src_descs[name] = desc
+            btn = Gtk.Button()
+            btn.set_name('device-btn')
+            btn.set_hexpand(True)
+            lbl = Gtk.Label(label=self._src_label(name, desc, is_default))
+            lbl.set_halign(Gtk.Align.START)
+            btn.add(lbl)
+            if is_default:
+                btn.get_style_context().add_class('active')
+            btn.connect('clicked', self._on_source_selected, name)
+            col.pack_start(btn, False, True, 0)
+            self._src_btns[name] = btn
+        return col
+
+    def _src_label(self, name, desc, active):
+        check = '  ' if active else ''
+        return f'{source_icon(name, desc)}  {desc}{check}'
+
+    def _on_source_selected(self, _btn, name):
+        for n, b in self._src_btns.items():
+            b.get_style_context().remove_class('active')
+            b.get_child().set_label(self._src_label(n, self._src_descs[n], False))
+        self._src_btns[name].get_style_context().add_class('active')
+        self._src_btns[name].get_child().set_label(
+            self._src_label(name, self._src_descs[name], True))
+        set_default_source(name)
+        self.src_device_lbl.set_label(self._src_descs[name])
+        vol, muted = get_source_volume()
+        self._blk = True
+        self.src_scale.set_value(vol)
+        self.src_pct.set_label(f'{vol}%')
+        self._blk = False
+        self._src_muted = muted
+        self._apply_mute(self.src_scale, self.src_icon, muted, mic_icon)
+        subprocess.Popen(['pkill', '-RTMIN+1', 'waybar'],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def _on_sink_selected(self, _btn, name):
+        for n, b in self._sink_btns.items():
+            b.get_style_context().remove_class('active')
+            b.get_child().set_label(
+                self._sink_label(n, self._sink_descs[n], False))
+        self._sink_btns[name].get_style_context().add_class('active')
+        self._sink_btns[name].get_child().set_label(
+            self._sink_label(name, self._sink_descs[name], True))
+        set_default_sink(name)
+        self.sink_device_lbl.set_label(self._sink_descs[name])
+        vol, muted = get_sink_volume()
+        self._blk = True
+        self.sink_scale.set_value(vol)
+        self.sink_pct.set_label(f'{vol}%')
+        self._blk = False
+        self._sink_muted = muted
+        self._apply_mute(self.sink_scale, self.sink_icon, muted, vol_icon)
+        subprocess.Popen(['pkill', '-RTMIN+1', 'waybar'],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # ── Builders UI ───────────────────────────────────────────────────────────
 
