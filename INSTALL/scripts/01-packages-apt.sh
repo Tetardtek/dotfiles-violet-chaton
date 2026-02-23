@@ -26,6 +26,15 @@ PACKAGES=(
     btop
     # atuin  → installé via son propre script (voir 02-packages-manual.sh)
     # starship → installé via son propre script (voir 02-packages-manual.sh)
+    # ── Waybar + dépendances ─────────────────────────────────────────────────
+    waybar
+    wob
+    brightnessctl
+    playerctl
+    wireplumber
+    python3-gi
+    gir1.2-gtk-3.0
+    gir1.2-gtklayershell-0.1
     # ── Fun & utils ──────────────────────────────────────────────────────────
     cmatrix
     toilet
