@@ -12,6 +12,14 @@ export INSTALL_LOG="$HOME/violet-chaton-install-$(date +%Y%m%d-%H%M%S).log"
 
 source "$SCRIPT_DIR/scripts/lib.sh"
 
+# ── Refus root ────────────────────────────────────────────────────────────────
+if [ "$EUID" -eq 0 ]; then
+    echo -e "${RED}${BOLD}  ERREUR : Ne pas lancer ce script en tant que root !${RESET}"
+    echo -e "  Lance-le en tant qu'utilisateur normal : ${CYAN}bash install.sh${RESET}"
+    echo -e "  ${MUTED}(sudo sera demandé automatiquement quand nécessaire)${RESET}"
+    exit 1
+fi
+
 # ── Vérifications préalables ──────────────────────────────────────────────────
 check_requirements() {
     local ok=true

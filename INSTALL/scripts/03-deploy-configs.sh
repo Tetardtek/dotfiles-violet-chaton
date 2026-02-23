@@ -11,7 +11,14 @@ deploy_file() {
     local src="$1"
     local dst="$2"
     ensure_dir "$(dirname "$dst")"
-    if [ -f "$dst" ]; then
+    if [ -L "$dst" ]; then
+        # Symlink géré par COSMIC : sauvegarder la cible réelle puis supprimer le lien
+        local real; real=$(readlink -f "$dst")
+        local rel="${dst#"$HOME/"}"
+        ensure_dir "$BACKUP_DIR/$(dirname "$rel")"
+        cp "$real" "$BACKUP_DIR/$rel" 2>/dev/null
+        rm "$dst"
+    elif [ -f "$dst" ]; then
         local rel="${dst#"$HOME/"}"
         ensure_dir "$BACKUP_DIR/$(dirname "$rel")"
         cp "$dst" "$BACKUP_DIR/$rel" 2>/dev/null
@@ -118,10 +125,26 @@ else
     fail "CosmicTerm"
 fi
 
-# ── GTK3 — thème violet-chaton ─────────────────────────────────────────────
-section "GTK3 — thème violet-chaton"
+# ── GTK3 / GTK4 — thème violet-chaton ─────────────────────────────────────
+section "GTK — thème violet-chaton"
+
+step "Thème GTK3 (adw-gtk3-dark + couleurs violet-chaton)..."
 ensure_dir "$HOME/.config/gtk-3.0"
 deploy_file "$THEMES/violet-chaton-gtk.css" "$HOME/.config/gtk-3.0/gtk.css"
+
+step "Thème GTK4 / libadwaita (couleurs violet-chaton)..."
+ensure_dir "$HOME/.config/gtk-4.0"
+deploy_file "$THEMES/violet-chaton-gtk.css" "$HOME/.config/gtk-4.0/gtk.css"
+
+step "Activation adw-gtk3-dark + dark mode (gsettings)..."
+if has_cmd gsettings; then
+    gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark' 2>/dev/null && \
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null && \
+        ok "gtk-theme=adw-gtk3-dark, color-scheme=prefer-dark" || \
+        warn "gsettings GTK échoué — thème à appliquer manuellement"
+else
+    warn "gsettings non disponible — thème GTK à appliquer manuellement"
+fi
 
 # ── Nemo — gestionnaire de fichiers ────────────────────────────────────────
 section "Nemo — configuration et thème"

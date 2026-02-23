@@ -19,6 +19,7 @@ PACKAGES=(
     chafa
     jq
     libgtk-3-bin
+    adw-gtk3
     nemo
     nemo-fileroller
     # fastfetch → installé via .deb GitHub (voir 02-packages-manual.sh)
