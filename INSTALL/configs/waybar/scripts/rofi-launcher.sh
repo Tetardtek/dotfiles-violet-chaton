@@ -105,6 +105,11 @@ case "$CHOICE_CLEAN" in
             /var/lib/flatpak/exports/share/applications \
             ~/.local/share/flatpak/exports/share/applications \
             2>/dev/null | head -1)
-        [[ -n "$DESKTOP" ]] && gtk-launch "$(basename "${DESKTOP%.desktop}")" &
+        if [[ -n "$DESKTOP" ]]; then
+            # Lancer via Exec= directement — évite gtk-launch qui enregistre
+            # l'app dans GIO/recently-used et déclenche l'ajout aux favoris COSMIC
+            EXEC=$(grep -m1 "^Exec=" "$DESKTOP" | cut -d= -f2- | sed 's/ *%[a-zA-Z]//g' | xargs)
+            [[ -n "$EXEC" ]] && setsid bash -c "$EXEC" &
+        fi
         ;;
 esac
